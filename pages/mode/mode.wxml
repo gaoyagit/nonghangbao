@@ -1,0 +1,9 @@
+<!--mode.wxml-->
+<view>
+  <view class="modetext">
+    <text>请选择您的飞行模式</text>
+  </view>
+  <button class="modegroup" bindtap="selfbuilt">自建任务</button> 
+  <button class="modegroup" bindtap="receive">接收任务</button> 
+  <button class="modegroup" bindtap="default">缺省模式</button> 
+</view>

@@ -1,0 +1,7 @@
+.inputarea{border: 1px solid ghostwhite}
+.registerbtn{margin-top:30rpx;background-color:#48c23d; margin-bottom: 20px;}
+.logocontainer{text-align: center; margin-top: 100rpx;}
+.logo{width: 158rpx; height: 158rpx; border-radius: 80%;}
+.group{margin: 40rpx 60rpx;}
+.tiplabel{font-size: 14px;text-align: center;margin-top: 20rpx}
+.logintxt{text-align: center}

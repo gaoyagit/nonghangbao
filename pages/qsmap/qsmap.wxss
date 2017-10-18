@@ -1,0 +1,2 @@
+.starRun{background-color: green;color: white }
+.stopRun{background-color: red;color: white }

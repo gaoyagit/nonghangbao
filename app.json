@@ -1,0 +1,18 @@
+{
+  "pages": [
+    
+    
+    "pages/map/map",
+    "pages/login/login",
+    "pages/mode/mode",
+    "pages/register/register",   
+    "pages/index/index",
+    "pages/logs/logs"
+  ],
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "农航宝",
+    "navigationBarTextStyle": "black"
+  }
+}

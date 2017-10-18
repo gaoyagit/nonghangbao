@@ -1,0 +1,2 @@
+.modegroup{margin:50rpx 35rpx;background-color:#48c23d;}
+.modetext{margin-top:20rpx;font-size: 20px;text-align: center;border: 1px solid gray;margin-left: 100rpx;margin-right: 100rpx;}

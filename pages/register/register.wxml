@@ -1,0 +1,14 @@
+<view class="logocontainer">
+    <image class="logo" src="{{imglogo}}" background-size="cover"></image>
+</view>
+<view class="group">    
+      用户名:<input class="inputarea" bindinput="userNameInput" type="text" />
+      密码:<input class="inputarea" bindinput="passwordInput" type="password" />
+      确认密码:<input class="inputarea" type="password" />
+      飞机号:<input class="inputarea" bindinput="plannumberInput" type="text" />
+      <view class="tiplabel">密码为6-20数字、字母、下划线的组合</view>
+      <button class="registerbtn" bindtap="register">立即注册</button>          
+</view>
+<view class="logintxt">
+  <a bindtap="login">已有账号，请登录</a>    
+</view>      

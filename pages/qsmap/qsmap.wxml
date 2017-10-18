@@ -1,0 +1,24 @@
+<view class="mainView">
+  <map
+        class="mapView"
+        latitude="{{latitude}}"
+        longitude="{{longitude}}"
+        markers="{{markers}}"
+        covers="{{covers}}"
+        show-location 
+        style="width: 100%; height: {{view.Height}}px;"
+        >
+    </map>
+   <view class="foot" style="height:46px" >  
+      <view style="float:left;">
+        <button class="starRun" bindtap="starRun" >开始作业</button>
+      </view>
+      <view style="float:left" >
+        <text>里程数：{{meters}}km</text>
+        <text>\n时间：{{time}}</text>
+      </view>
+      <view  style="float:right;">
+        <button class="stopRun" bindtap="stopRun">停止作业</button>
+      </view>
+  </view> 
+</view>
