@@ -2,7 +2,7 @@
   "pages": [
     
     
-    "pages/map/map",
+    "pages/_map/map",
     "pages/login/login",
     "pages/mode/mode",
     "pages/register/register",   
