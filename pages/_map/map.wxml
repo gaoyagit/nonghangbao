@@ -1,8 +1,8 @@
 <map
     id="map"
-    longitude="113.324520"
-    latitude="23.099994"
-    scale="14"
+    longitude="{{longitude}}"
+    latitude="{{latitude}}"
+    scale="{{scale}}"
     controls="{{controls}}"
     bindcontroltap="controltap"
     markers="{{markers}}"
@@ -13,5 +13,11 @@
     style="width: 100%; height:{{mapHeight}}px;">
 
 </map>
-
+<view class="foot" style="width: 100%;">
+<button type="default"
+size="{{defaultSize}}" 
+ > 
+ 点击设置作业区
+  </button>
+</view>
 

@@ -1,26 +1,21 @@
 // map.js
 Page({
     data: {
-        polyline: [{
-            points: [{
-                longitude: 113.3245211,
-                latitude: 23.10229
-            }, {
-                longitude: 113.324520,
-                latitude: 23.21229
-            }],
-            color:"#FF0000DD",
-            width: 2,
-            dottedLine: true
-        }],
+        polyline: [],
+        startPosition:{},
+        latitude:'',
+        longitude:'',
         mapHeight:'',
+        scale:'14'
     },
     onLoad:function(){
         var _this = this;
         wx.getLocation({
             success: function (res) {
-                latitude0: res.latitude   //飞机当前位置的维度
-                longitude0: res.longitude //飞机当前位置的经度
+                _this.setData({
+                    latitude:res.latitude,
+                    longitude:res.longitude
+                })
             },
         })
         //获取屏幕信息，设置操作地图的控件
@@ -28,49 +23,96 @@ Page({
             success: function(res){
                 _this.setData({
                     windowHeight: res.windowHeight,//屏幕高度
-                    mapHeight: res.windowHeight,
+                    mapHeight: res.windowHeight-46,
                     controls: [{
-                        id: 1,
-                        iconPath: '/pages/images/plus.png',
-                        position: {
-                            left: res.windowWidth - 60,
-                            top: 10,
-                            width: 25,
-                            height: 25
-                        },
-                        clickable: true
-                    },{
-                        id: 2,
-                        iconPath: '/pages/images/minus.png',
-                        position: {
-                            left: res.windowWidth - 30,
-                            top: 10,
-                            width: 25,
-                            height: 25
-                        },
-                        clickable: true
-                    },{
                         id: 3,
-                        iconPath: '/pages/images/location.png',
+                        iconPath: '/pages/images/location3.png',
                         position: {
-                            left: res.windowWidth / 2 - 15,
-                            top: res.windowHeight / 2 - 30,
-                            width: 30,
-                            height: 30
+                            left: res.windowWidth / 2 - 13,
+                            top: res.windowHeight / 2 - 62,
+                            width: 26,
+                            height: 36
                         },
                         clickable: true
                     }]
                 })
             }
         })
+        wx.showModal({
+            title: '提示',
+            content: '请先选择飞机的起点',
+            showCancel:false,
+            success:function(){
+                wx.chooseLocation({
+                    success:function(params){
+                        console.log(params)
+                        _this.setData({
+                            startPosition:{
+                                latitude:params.latitude,
+                                longitude:params.longitude,
+                                address:params.address,
+                            },
+                            markers: [{
+                                iconPath: "/pages/images/plane.png",
+                                id: 0,
+                                latitude: params.latitude,
+                                longitude: params.longitude,
+                                width: 25,
+                                height: 25,
+                                callout:{
+                                    content:'点击飞机重新选择位置',
+                                    display:'ALWAYS',
+                                }
+                            }],
+                        })
+                    },
+                })
+            }
+        })
     },
     regionchange:function(e) {
         console.log(e.type)
+
     },
     markertap:function(e) {
-        console.log(e.markerId)
+        var _this = this;
+        if(e.markerId==0){
+            wx.showModal({
+                title: '提示',
+                content: '是否要重新选择飞机的起始位置？',
+                success:function(res){
+                    if (res.confirm) {
+                        wx.chooseLocation({
+                            success:function(params){
+                                _this.data.markers[0].latitude=params.latitude;
+                                _this.data.markers[0].longitude=params.longitude;
+
+                                _this.setData({
+                                    startPosition:{
+                                        latitude:params.latitude,
+                                        longitude:params.longitude,
+                                        address:params.address,
+                                    },
+                                    markers: _this.data.markers,
+                                })
+                            },
+                        })
+                    }
+                },
+            })
+        }
     },
     controltap:function(e) {
-        console.log(e.controlId)
+        //console.log("scale===" + that.data.scale)
+        let that = this;
+        if (e.controlId === 1) {
+            that.setData({
+                scale: ++that.data.scale
+            })
+        } else if (e.controlId === 2) {
+            that.setData({
+                scale: --that.data.scale
+            })
+        }
     }
 })

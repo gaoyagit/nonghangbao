@@ -304,7 +304,7 @@ Page({
                         },
                         {
                             id: 3,
-                            iconPath: '/pages/images/location.png',
+                            iconPath: '/pages/images/location1.png',
                             position: {
                                 left: res.windowWidth / 2 - 15,
                                 top: (res.windowHeight - 45) / 2 - 30,
