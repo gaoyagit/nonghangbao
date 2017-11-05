@@ -10,6 +10,7 @@ Page({
     },
     onLoad:function(){
         var _this = this;
+        this.mapCtx = wx.createMapContext('map');
         wx.getLocation({
             success: function (res) {
                 _this.setData({
@@ -25,7 +26,7 @@ Page({
                     windowHeight: res.windowHeight,//屏幕高度
                     mapHeight: res.windowHeight-46,
                     controls: [{
-                        id: 3,
+                        id: 1,
                         iconPath: '/pages/images/location3.png',
                         position: {
                             left: res.windowWidth / 2 - 13,
@@ -34,10 +35,28 @@ Page({
                             height: 36
                         },
                         clickable: true
+                    },{
+                        id: 2,
+                        iconPath: '/pages/images/circle_location.png',
+                        position: {
+                            left: res.windowWidth-60,
+                            top: res.windowHeight-106,
+                            width: 40,
+                            height: 40
+                        },
+                        clickable: true
                     }]
                 })
             }
         })
+        this.showModalToChoosePlaneLoaction();
+    },
+    regionchange:function(e) {
+        console.log(e.type)
+
+    },
+    showModalToChoosePlaneLoaction:function(){
+        var _this = this;
         wx.showModal({
             title: '提示',
             content: '请先选择飞机的起点',
@@ -66,13 +85,12 @@ Page({
                             }],
                         })
                     },
+                    cancel:function(){
+                        _this.showModalToChoosePlaneLoaction();
+                    }
                 })
             }
         })
-    },
-    regionchange:function(e) {
-        console.log(e.type)
-
     },
     markertap:function(e) {
         var _this = this;
@@ -104,15 +122,16 @@ Page({
     },
     controltap:function(e) {
         //console.log("scale===" + that.data.scale)
-        let that = this;
+        var that = this;
         if (e.controlId === 1) {
-            that.setData({
-                scale: ++that.data.scale
-            })
+            // that.setData({
+            //     scale: ++that.data.scale
+            // })
         } else if (e.controlId === 2) {
-            that.setData({
-                scale: --that.data.scale
-            })
+            this.mapCtx.moveToLocation()
+            // that.setData({
+            //     scale: --that.data.scale
+            // })
         }
     }
 })
