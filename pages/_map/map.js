@@ -30,7 +30,7 @@ Page({
                         iconPath: '/pages/images/location3.png',
                         position: {
                             left: res.windowWidth / 2 - 13,
-                            top: res.windowHeight / 2 - 62,
+                            top: res.windowHeight / 2 - 64,
                             width: 26,
                             height: 36
                         },
@@ -128,10 +128,21 @@ Page({
             //     scale: ++that.data.scale
             // })
         } else if (e.controlId === 2) {
-            this.mapCtx.moveToLocation()
-            // that.setData({
-            //     scale: --that.data.scale
-            // })
+            this.mapCtx.moveToLocation();
+            this.changeCircleLocationColor();
         }
+    },
+    changeCircleLocationColor:function(){
+        this.data.controls[1].iconPath = '/pages/images/circle_location_green.png';
+        this.setData({
+            controls:this.data.controls,
+        })
+        var _this = this;
+        setTimeout(function(){
+            _this.data.controls[1].iconPath = '/pages/images/circle_location.png';
+            _this.setData({
+                controls:_this.data.controls,
+            })
+        },1000);
     }
 })
