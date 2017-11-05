@@ -59,7 +59,7 @@ Page({
                 })
             }
         })
-        //this.showModalToChoosePlaneLoaction();
+        this.showModalToChoosePlaneLoaction();
     },
     showModalToChoosePlaneLoaction:function(){
         var _this = this;
@@ -199,11 +199,13 @@ Page({
         })
     },
     finishSetOperationArea:function(){
-        this.setData({
-            mapViewDisplay:0,
-            operateViewDisplay:0,
-            setOperateWidthViewDisplay:1,
-        })
+        // this.setData({
+        //     mapViewDisplay:0,
+        //     operateViewDisplay:0,
+        //     setOperateWidthViewDisplay:1,
+        // })
+        var minPointIndex = this.findMinLength();
+
     },
     setOperateWidth:function(e){
         this.setData({
@@ -219,6 +221,8 @@ Page({
 
             navViewDisplay:1,
         })
+        this.generateNavLine();
+
     },
 
     changeCircleLocationColor:function(){
@@ -233,5 +237,41 @@ Page({
                 controls:_this.data.controls,
             })
         },1000);
+    },
+
+    //生成航线
+    generateNavLine:function(){
+
+    },
+    findMinLength:function(){
+        var plane = this.data.startPosition;
+        var operation = this.data.polyline[0].points;
+        var length = operation.length;
+        var minLen = 0,minIndex = 0;
+        for(var i = 0;i < length-1 ; i ++){
+            var len = Math.pow( ((operation[i].longitude-plane.longitude)*111000),2)+Math.pow( ((operation[i].latitude-plane.latitude)*111000),2);
+            console.log(len);
+            if( i== 0 ){
+                minLen = len;
+            }else{
+                if(minLen > len){
+                    minIndex = i;
+                    minLen = len;
+                }
+            }
+        }
+        console.log(minLen,minIndex);
+
+        this.data.polyline[1] = {
+            points: [this.data.startPosition,this.data.polyline[0].points[minIndex]],
+            color: "#006400DD",
+            width: 2,
+            dottedLine: true
+        }//放置的是飞机到最近一个作业点的航线
+
+        this.setData({
+            polyline:this.data.polyline,
+        })
+        return minIndex;
     }
 })
