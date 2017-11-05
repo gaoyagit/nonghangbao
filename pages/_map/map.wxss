@@ -1,3 +1,11 @@
 button{
     border:0px;border-radius:0px;
 }
+.setOperateWidthView{
+    text-align:center;
+}
+
+.setOperateWidthView input{
+    margin-bottom:50px;
+    margin-top:50px;
+}

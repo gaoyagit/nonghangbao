@@ -1,26 +1,46 @@
-<map
-    id="map"
-    longitude="{{longitude}}"
-    latitude="{{latitude}}"
-    scale="{{scale}}"
-    controls="{{controls}}"
-    bindcontroltap="controltap"
-    markers="{{markers}}"
-    bindmarkertap="markertap"
-    polyline="{{polyline}}"
-    show-location
-    style="width: 100%; height:{{mapHeight}}px;">
-
-</map>
 <view class="foot" style="width: 100%;">
-    <button type="default"
-            style="display:{{!operationDisplay?'none':'display'}};"
-            bindtap="setOperationArea" size="default"> 点击设置作业区</button>
-    <button type="primary"
-            style="width: 50%; float:left;display:{{operationDisplay?'none':'display'}};"
-            bindtap="reSetOperationArea" size="default"> 重新设置作业区</button>
-    <button type="warn"
-            style="width: 50%;float:left;display:{{operationDisplay?'none':'display'}};"
-            bindtap="finishSetOperationArea" size="default"> 结束设置作业区</button>
+
+    <view class="mapView" style="width: 100%; display:{{!mapViewDisplay?'none':'block'}};">
+        <map
+                id="map"
+                longitude="{{longitude}}"
+                latitude="{{latitude}}"
+                scale="{{scale}}"
+                controls="{{controls}}"
+                bindcontroltap="controltap"
+                markers="{{markers}}"
+                bindmarkertap="markertap"
+                polyline="{{polyline}}"
+                show-location
+                style="width: 100%; height:{{mapHeight}}px;">
+        </map>
+    </view>
+
+    <view class="operateView" style="width: 100%; display:{{!operateViewDisplay?'none':'block'}};">
+        <button type="default"
+                style="display:{{!operationDisplay?'none':'block'}};"
+                bindtap="setOperationArea" size="default"> 点击设置作业区</button>
+        <button type="primary"
+                style="width: 50%; float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="reSetOperationArea" size="default"> 重新设置作业区</button>
+        <button type="warn"
+                style="width: 50%;float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="finishSetOperationArea" size="default"> 结束设置作业区</button>
+    </view>
+
+    <view class="setOperateWidthView" style="width: 100%; display:{{!setOperateWidthViewDisplay?'none':'block'}};">
+          <label>设置幅宽</label>
+          <input bindinput="setOperateWidth" placeholder="请在这里输入幅宽"></input>
+          <button type="default" bindtap="finishSetOperateWidthView" size="default">确定</button>
+    </view>
+
+    <view class="navView" style="width: 100%; display:{{!navViewDisplay?'none':'block'}};">
+            <button type="default"
+                    style="display:{{!navButtonDisplay?'none':'block'}};"
+                    bindtap="setOperationArea" size="default">开始导航</button>
+            <button type="warn"
+                    style="display:{{navButtonDisplay?'none':'block'}};"
+                    bindtap="setOperationArea" size="default">结束导航</button>
+    </view>
 </view>
 

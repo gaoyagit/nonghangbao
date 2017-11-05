@@ -7,8 +7,16 @@ Page({
         longitude:'',
         mapHeight:'',
         scale:'14',
-        operationDisplay:1,
-        operationArray:[],
+        operationDisplay:1,//控制是否显示设置作业区的按钮的选项
+        operationArray:[],//生成作业区的各个坐标点的数组
+        operateWidth:0,//幅宽，也就是作业宽度
+
+        mapViewDisplay:1,
+        operateViewDisplay:1,
+        setOperateWidthViewDisplay:0,
+        navViewDisplay:0,
+
+        navButtonDisplay:1,
     },
     onLoad:function(){
         var _this = this;
@@ -26,7 +34,7 @@ Page({
             success: function(res){
                 _this.setData({
                     windowHeight: res.windowHeight,//屏幕高度
-                    mapHeight: res.windowHeight-46,
+                    mapHeight: res.windowHeight-106,//46
                     controls: [{
                         id: 1,
                         iconPath: '/pages/images/location3.png',
@@ -191,7 +199,26 @@ Page({
         })
     },
     finishSetOperationArea:function(){
+        this.setData({
+            mapViewDisplay:0,
+            operateViewDisplay:0,
+            setOperateWidthViewDisplay:1,
+        })
+    },
+    setOperateWidth:function(e){
+        this.setData({
+            operateWidth:e.detail.value,
+        })
+    },
+    finishSetOperateWidthView:function(){
+        this.setData({
 
+            mapViewDisplay:1,
+            operateViewDisplay:0,
+            setOperateWidthViewDisplay:0,
+
+            navViewDisplay:1,
+        })
     },
 
     changeCircleLocationColor:function(){
