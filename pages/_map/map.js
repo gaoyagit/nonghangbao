@@ -11,12 +11,12 @@ Page({
         operationArray:[],//生成作业区的各个坐标点的数组
         operateWidth:0,//幅宽，也就是作业宽度
 
-        mapViewDisplay:1,
-        operateViewDisplay:1,
-        setOperateWidthViewDisplay:0,
-        navViewDisplay:0,
+        mapViewDisplay:1,//地图view
+        operateViewDisplay:1,//设置作业区view
+        setOperateWidthViewDisplay:0,//设置幅宽view
+        navViewDisplay:0,//开始导航view
 
-        navButtonDisplay:1,
+        navButtonDisplay:1,//导航按钮
     },
     onLoad:function(){
         var _this = this;
