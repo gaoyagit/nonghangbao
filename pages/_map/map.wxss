@@ -1,1 +1,3 @@
-.foot input{border: solid 1px black ;width: 120px;}
+button{
+    border:0px;border-radius:0px;
+}

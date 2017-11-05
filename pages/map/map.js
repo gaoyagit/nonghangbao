@@ -330,7 +330,7 @@ Page({
         })
     },
     //点击缩放按钮动态请求数据
-    controltap(e) {
+    controltap:function (e) {
         //console.log(e)
         var that = this;
 

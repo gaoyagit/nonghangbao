@@ -6,7 +6,9 @@ Page({
         latitude:'',
         longitude:'',
         mapHeight:'',
-        scale:'14'
+        scale:'14',
+        operationDisplay:1,
+        operationArray:[],
     },
     onLoad:function(){
         var _this = this;
@@ -29,8 +31,8 @@ Page({
                         id: 1,
                         iconPath: '/pages/images/location3.png',
                         position: {
-                            left: res.windowWidth / 2 - 13,
-                            top: res.windowHeight / 2 - 64,
+                            left: res.windowWidth / 2 - 12,
+                            top: res.windowHeight / 2 - 58,
                             width: 26,
                             height: 36
                         },
@@ -49,11 +51,7 @@ Page({
                 })
             }
         })
-        this.showModalToChoosePlaneLoaction();
-    },
-    regionchange:function(e) {
-        console.log(e.type)
-
+        //this.showModalToChoosePlaneLoaction();
     },
     showModalToChoosePlaneLoaction:function(){
         var _this = this;
@@ -121,17 +119,81 @@ Page({
         }
     },
     controltap:function(e) {
-        //console.log("scale===" + that.data.scale)
-        var that = this;
-        if (e.controlId === 1) {
-            // that.setData({
-            //     scale: ++that.data.scale
-            // })
+        var _this = this;
+        if (e.controlId === 1) {//红色的定位
+            this.data.operationDisplay?'':
+                this.mapCtx.getCenterLocation({
+                    success:function(res){
+                        var len = _this.data.operationArray.length
+                        if (len <=2) {
+                            _this.data.operationArray.push({
+                                longitude: res.longitude,
+                                latitude: res.latitude
+                            });//少于3点的时候，直接添加进去，
+
+                            //2个点的，末尾位置放第一个点
+                            if (len == 2){
+                                _this.data.operationArray.push(_this.data.operationArray[0])
+                            }
+                        } else if (len > 2) {
+
+                            //大于2个点的时候，直接在倒数第二个位置放置新添加的点
+                            _this.data.operationArray.splice(_this.data.operationArray.length - 1, 0, {
+                                longitude: res.longitude,
+                                latitude: res.latitude
+                            })
+                        }
+                        _this.data.polyline[0] = {
+                            points: _this.data.operationArray,
+                            color: "#FF0000DD",
+                            width: 2,
+                            dottedLine: true
+                        }
+                        _this.setData({
+                            operationArray: _this.data.operationArray,
+                            polyline: _this.data.polyline
+                        })
+                    }
+                })
+
         } else if (e.controlId === 2) {
             this.mapCtx.moveToLocation();
             this.changeCircleLocationColor();
         }
     },
+    setOperationArea:function(){
+        var _this = this;
+        _this.setData({
+            operationDisplay:0,
+        })
+        // wx.showModal({
+        //     title: '提示',
+        //     content: '点击屏幕中央的红色定位按钮，设置作业区',
+        //     showCancel:false,
+        //     success:function(){
+        //         _this.setData({
+        //             operationDisplay:0,
+        //         })
+        //     }
+        // })
+    },
+    reSetOperationArea:function(){
+        this.data.operationArray = [];
+        this.data.polyline[0] = {
+            points: this.data.operationArray,
+            color: "#FF0000DD",
+            width: 2,
+            dottedLine: true
+        }
+        this.setData({
+            operationArray: this.data.operationArray,
+            polyline: this.data.polyline
+        })
+    },
+    finishSetOperationArea:function(){
+
+    },
+
     changeCircleLocationColor:function(){
         this.data.controls[1].iconPath = '/pages/images/circle_location_green.png';
         this.setData({
