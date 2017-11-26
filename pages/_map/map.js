@@ -1,7 +1,177 @@
 // map.js
+// 将以北方向为零点的坐标方位角转化为用于表示斜率的夹角
+var vRadius = 6378136.49//地球半径
+// 计算起点到终点的航向角
+function ComputeHeading(vFromLat, vFromLon, vToLat, vToLon) {
+    var vFromLatArc = Angle2Arc(vFromLat);
+    var vToLatArc = Angle2Arc(vToLat);
+    var vLonArcDif = Angle2Arc(vToLon) - Angle2Arc(vFromLon);
+    var rHeading = Arc2Angle(Math.atan2(Math.sin(vLonArcDif) * Math.cos(vToLatArc), Math.cos(vFromLatArc) * Math.sin(vToLatArc) - Math.sin(vFromLatArc) * Math.cos(vToLatArc) * Math.cos(vLonArcDif)));
+    while (rHeading >= 360) {
+        rHeading -= 360;
+    }
+    while (rHeading < 0) {
+        rHeading += 360;
+    }
+    return rHeading;
+}
+
+/// 角度转弧度
+function Angle2Arc(vAngle) {
+    return vAngle * Math.PI / 180.0;
+}
+
+/// 弧度转角度
+function Arc2Angle(vArc) {
+    return vArc * 180.0 / Math.PI;
+}
+
+// 将以北方向为零点的坐标方位角转化为用于表示斜率的夹角
+function Heading2KAndgle(vHeading) {
+    while (vHeading >= 360) {
+        vHeading -= 360;
+    }
+    while (vHeading < 0) {
+        vHeading += 360;
+    }
+    var rAngle = 0;
+    if (vHeading >= 0 && vHeading < 180) {
+        rAngle = 90 - vHeading;
+    }
+    else {
+        rAngle = 270 - vHeading;
+    }
+    return rAngle;
+}
+
+// 判断一个数是否近似为0
+function IsApproximateZero(vNum) {
+    if (Math.round(vNum * 1e8) == 0) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+// 获取射线与线段的交点
+//vLat0:射线端点纬度 vLon0:射线端点经度 vHeading:射线航向角
+//vLat1:线段端点1纬度 vLon1:线段端点1经度 vLat2:线段端点2纬度 vLon2:线段端点2经度
+function LineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2) {
+    //Tuple < double, double > rTuple = null;
+    var pKAngle = Heading2KAndgle(vHeading);//航向角
+    var tuple = [] //存放射线与线段之间的交点的数组
+    //Lon作为X，Lat作为Y，线段方程的参数
+    var A2 = vLat2 - vLat1;
+    var B2 = vLon1 - vLon2;
+    var C2 = vLon2 * vLat1 - vLon1 * vLat2;
+    var rLat = 0;
+    var rLon = 0;
+    if (pKAngle == 90 || pKAngle == -90) {
+        if (IsApproximateZero(B2)) {
+            //重合
+            if (vLon1 == vLon0) {
+                rLat = vLat1
+                rLon = vLon1
+                // tuple.push({longitude:vLon1,latitude:vLat1})
+            }
+            //平行
+            else {
+                return [];
+            }
+        }
+        else {
+            //tuple.push({ longitude: vLon0, latitude: -(C2 + A2 * vLon0) / B2 })
+            rLat = -(C2 + A2 * vLon0) / B2
+            rLon = vLon0
+        }
+        if (rLat >= Math.min(vLat1, vLat2) && rLat <= Math.max(vLat1, vLat2) && rLon >= Math.min(vLon1, vLon2) && rLon <= Math.max(vLon1, vLon2)) {
+            tuple.push({longitude: rLon, latitude: rLat})
+        }
+        else {
+            tuple = [];
+        }
+        return tuple;
+    }
+    var A1 = Math.tan(pKAngle * Math.PI / 180);
+    var B1 = -1;
+    var C1 = vLat0 - Math.tan(pKAngle * Math.PI / 180) * vLon0;
+    var A1B2A2B1 = A1 * B2 - A2 * B1;
+    var A2C1A1C2 = A2 * C1 - A1 * C2;
+    var B1C2B2C1 = B1 * C2 - B2 * C1;
+
+    // rLat = 0;
+    // rLon = 0;
+
+    //前四种情况计算出的值不够准确，会被认为交点不在线上，故单独处理
+    if (IsApproximateZero(A1) && !IsApproximateZero(B1) && !IsApproximateZero(A2)) {
+        //rLat = (vP1Lat2 + vP1Lat1) / 2.0;
+        rLat = -C1 / B1;
+        rLon = (-C2 - B2 * rLat) / A2;
+    }
+    else if (!IsApproximateZero(A1) && IsApproximateZero(A2) && !IsApproximateZero(B2)) {
+        rLat = (vLat2 + vLat1) / 2.0;
+        //rLat = -C2 / B2;
+        rLon = (-C1 - B1 * rLat) / A1;
+    }
+    else if (!IsApproximateZero(A1) && IsApproximateZero(B1) && !IsApproximateZero(B2)) {
+        //rLon = (vP1Lon1 + vP1Lon2) / 2.0;
+        rLon = -C1 / A1;
+        rLat = (-C2 + A2 * rLon) / B2;
+    }
+    else if (!IsApproximateZero(B1) && !IsApproximateZero(A2) && IsApproximateZero(B2)) {
+        rLon = (vLon1 + vLon2) / 2.0;
+        //rLon = -C2 / A2;
+        rLat = (-C1 - A1 * rLon) / B1;
+    }
+    else if (IsApproximateZero(A1B2A2B1)) {
+        return [];
+    }
+    else {
+        rLat = A2C1A1C2 / A1B2A2B1;
+        rLon = B1C2B2C1 / A1B2A2B1;
+    }
+    //如果交点在线段内且在射线的方向上再返回
+    //&&Math.abs(vHeading - GetAzimuth(vLat0, vLon0, rLat, rLon)) < 90
+    //为什么没有满足if条件还能返回值
+    if (rLat >= Math.min(vLat1, vLat2) && rLat <= Math.max(vLat1, vLat2) && rLon >= Math.min(vLon1, vLon2) && rLon <= Math.max(vLon1, vLon2)) {
+        tuple.push({longitude: rLon, latitude: rLat})
+    }
+    else {
+        tuple = [];
+    }
+    return tuple;
+}
+
+//求1到2的方位角(圆心在1上，角度制)
+function GetAzimuth(vLat1, vLon1, vLat2, vLon2) {
+    return ComputeHeading(vLat1, vLon1, vLat2, vLon2);
+}
+
+// 获取两点间线段距离
+function GetLatLonDistance(vLat1, vLon1, vLat2, vLon2) {
+    return Math.sqrt(Math.pow(vLat1 - vLat2, 2) + Math.pow(vLon1 - vLon2, 2));
+}
+
+/// 获取航点到航线的最短距离
+function GetLatLonMinDistance(vPoint, vLine) {
+    if (vPoint == null || vLine == null) return double.NaN;
+    return GetLatLonMinDistance(vPoint.Lat, vPoint.Lon, vLine.Lat1, vLine.Lon1, vLine.Lat2, vLine.Lon2);
+}
+
+/// 计算点到直线的最短距离
+function GetLatLonMinDistance(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2) {
+    var pFootPointLat = 0;
+    var pFootPointLon = 0;
+    GetLatLonFootPoint(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2);
+    return ComputeSpacialDistance(vLat0, vLon0, pFootPointLat, pFootPointLon);
+}
+
+
 Page({
     data: {
         polyline: [],
+        markers:[],
         startPosition:{},
         latitude:'',
         longitude:'',
@@ -17,6 +187,10 @@ Page({
         navViewDisplay:0,//开始导航view
 
         navButtonDisplay:1,//导航按钮
+
+        headingAngle: 0,//航向角的值
+
+        crossPoints:[],
     },
     onLoad:function(){
         var _this = this;
@@ -50,7 +224,7 @@ Page({
                         iconPath: '/pages/images/circle_location.png',
                         position: {
                             left: res.windowWidth-60,
-                            top: res.windowHeight-106,
+                            top: res.windowHeight-206,//待调整
                             width: 40,
                             height: 40
                         },
@@ -59,73 +233,9 @@ Page({
                 })
             }
         })
-        this.showModalToChoosePlaneLoaction();
+        //this.showModalToChoosePlaneLoaction();
     },
-    showModalToChoosePlaneLoaction:function(){
-        var _this = this;
-        wx.showModal({
-            title: '提示',
-            content: '请先选择飞机的起点',
-            showCancel:false,
-            success:function(){
-                wx.chooseLocation({
-                    success:function(params){
-                        console.log(params)
-                        _this.setData({
-                            startPosition:{
-                                latitude:params.latitude,
-                                longitude:params.longitude,
-                                address:params.address,
-                            },
-                            markers: [{
-                                iconPath: "/pages/images/plane.png",
-                                id: 0,
-                                latitude: params.latitude,
-                                longitude: params.longitude,
-                                width: 25,
-                                height: 25,
-                                callout:{
-                                    content:'点击飞机重新选择位置',
-                                    display:'ALWAYS',
-                                }
-                            }],
-                        })
-                    },
-                    cancel:function(){
-                        _this.showModalToChoosePlaneLoaction();
-                    }
-                })
-            }
-        })
-    },
-    markertap:function(e) {
-        var _this = this;
-        if(e.markerId==0){
-            wx.showModal({
-                title: '提示',
-                content: '是否要重新选择飞机的起始位置？',
-                success:function(res){
-                    if (res.confirm) {
-                        wx.chooseLocation({
-                            success:function(params){
-                                _this.data.markers[0].latitude=params.latitude;
-                                _this.data.markers[0].longitude=params.longitude;
 
-                                _this.setData({
-                                    startPosition:{
-                                        latitude:params.latitude,
-                                        longitude:params.longitude,
-                                        address:params.address,
-                                    },
-                                    markers: _this.data.markers,
-                                })
-                            },
-                        })
-                    }
-                },
-            })
-        }
-    },
     controltap:function(e) {
         var _this = this;
         if (e.controlId === 1) {//红色的定位
@@ -204,8 +314,8 @@ Page({
         //     operateViewDisplay:0,
         //     setOperateWidthViewDisplay:1,
         // })
-        var minPointIndex = this.findMinLength();
-
+       // var minPointIndex = this.findMinLength();
+        this.generateNavLine();
     },
     setOperateWidth:function(e){
         this.setData({
@@ -240,38 +350,137 @@ Page({
     },
 
     //生成航线
-    generateNavLine:function(){
+    generateNavLine:function() {
+        var _this = this;
+        var weiduMinPoint, jingduMinPoint;
+        var copyOperationArray = JSON.parse(JSON.stringify(_this.data.operationArray));
 
-    },
-    findMinLength:function(){
-        var plane = this.data.startPosition;
-        var operation = this.data.polyline[0].points;
-        var length = operation.length;
-        var minLen = 0,minIndex = 0;
-        for(var i = 0;i < length-1 ; i ++){
-            var len = Math.pow( ((operation[i].longitude-plane.longitude)*111000),2)+Math.pow( ((operation[i].latitude-plane.latitude)*111000),2);
-            console.log(len);
-            if( i== 0 ){
-                minLen = len;
-            }else{
-                if(minLen > len){
-                    minIndex = i;
-                    minLen = len;
-                }
+        weiduMinPoint = copyOperationArray[0];
+        jingduMinPoint = copyOperationArray[0];
+
+        var length = copyOperationArray.length - 1;
+
+        for (var i = 0; i < length; i++) {
+            if (copyOperationArray[i].latitude < weiduMinPoint.latitude) {
+                weiduMinPoint = copyOperationArray[i]
+            }
+            if (copyOperationArray[i].longitude < jingduMinPoint.longitude) {
+                jingduMinPoint = copyOperationArray[i]
             }
         }
-        console.log(minLen,minIndex);
 
-        this.data.polyline[1] = {
-            points: [this.data.startPosition,this.data.polyline[0].points[minIndex]],
-            color: "#006400DD",
-            width: 2,
-            dottedLine: true
-        }//放置的是飞机到最近一个作业点的航线
+        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, 30, weiduMinPoint.latitude);
 
-        this.setData({
-            polyline:this.data.polyline,
-        })
-        return minIndex;
+        basePoint = this.ComputeOffset(basePoint.latitude, basePoint.longitude, 25, 30 + 90);
+        var basePointCrossPointArray = [];
+        var firstCrossPoints = []
+        for (var i = 0; i < length; i++) {
+            //从中间点出发的射线和作业区的交点
+            basePointCrossPointArray = LineCross(basePoint.latitude, basePoint.longitude, 30, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
+            if (basePointCrossPointArray.length > 0) {
+                firstCrossPoints.push({
+                    longitude: basePointCrossPointArray[0].longitude,
+                    latitude: basePointCrossPointArray[0].latitude
+                })
+            }
+        }
+        this.data.crossPoints.push.call(firstCrossPoints,firstCrossPoints);
+
     }
+    ,
+    //找到中间点的基点，即第一个点的函数,求航线和作业区交点的第一个点，（这个点根据已知直线和点以及点在直线的角度，求交点得出的）
+    basePoint:function(vLat0, vLon0, vHeading, vLat1) {
+        var basepoint = []
+        var pKAngle = Heading2KAndgle(vHeading);
+        var A0 = Math.tan(pKAngle * Math.PI / 180);
+        var B0 = -1;
+        var C0 = vLat0 - Math.tan(pKAngle * Math.PI / 180) * vLon0;
+        basepoint.push({
+            longitude: -(C0 + B0 * vLat1) / A0,
+            //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+            latitude: vLat1
+        })
+        return basepoint;
+    },
+    ComputeOffset:function(vLat, vLon, vDistance, vHeading) {
+        var pDistanceArc = vDistance / vRadius;
+        var pHArc = Angle2Arc(vHeading);
+        var pLatArc = Angle2Arc(vLat);
+        var pDAC = Math.cos(pDistanceArc);
+        var pDAS = Math.sin(pDistanceArc);
+        var pLAS = Math.sin(pLatArc);
+        var pLAC = Math.cos(pLatArc);
+        var rLatS = pDAC * pLAS + pDAS * pLAC * Math.cos(pHArc);
+        return {
+            latitude:Arc2Angle(Math.asin(rLatS)),
+            longitude:Arc2Angle(Angle2Arc(vLon) + Math.atan2(pDAS * pLAC * Math.sin(pHArc), pDAC - pLAS * rLatS));
+        }
+    },
+
 })
+
+// showModalToChoosePlaneLoaction:function(){
+//     var _this = this;
+//     wx.showModal({
+//         title: '提示',
+//         content: '请先选择飞机的起点',
+//         showCancel:false,
+//         success:function(){
+//             wx.chooseLocation({
+//                 success:function(params){
+//                     console.log(params)
+//                     _this.setData({
+//                         startPosition:{
+//                             latitude:params.latitude,
+//                             longitude:params.longitude,
+//                             address:params.address,
+//                         },
+//                         markers: [{
+//                             iconPath: "/pages/images/plane.png",
+//                             id: 0,
+//                             latitude: params.latitude,
+//                             longitude: params.longitude,
+//                             width: 25,
+//                             height: 25,
+//                             callout:{
+//                                 content:'点击飞机重新选择位置',
+//                                 display:'ALWAYS',
+//                             }
+//                         }],
+//                     })
+//                 },
+//                 cancel:function(){
+//                     _this.showModalToChoosePlaneLoaction();
+//                 }
+//             })
+//         }
+//     })
+// },
+// markertap:function(e) {
+//     var _this = this;
+//     if(e.markerId==0){
+//         wx.showModal({
+//             title: '提示',
+//             content: '是否要重新选择飞机的起始位置？',
+//             success:function(res){
+//                 if (res.confirm) {
+//                     wx.chooseLocation({
+//                         success:function(params){
+//                             _this.data.markers[0].latitude=params.latitude;
+//                             _this.data.markers[0].longitude=params.longitude;
+//
+//                             _this.setData({
+//                                 startPosition:{
+//                                     latitude:params.latitude,
+//                                     longitude:params.longitude,
+//                                     address:params.address,
+//                                 },
+//                                 markers: _this.data.markers,
+//                             })
+//                         },
+//                     })
+//                 }
+//             },
+//         })
+//     }
+// },

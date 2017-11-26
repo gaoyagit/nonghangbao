@@ -1,5 +1,5 @@
 var vRadius = 6378136.49//地球半径
-// 计算起点到终点的航向角        
+// 计算起点到终点的航向角
 function ComputeHeading(vFromLat, vFromLon, vToLat, vToLon) {
     var vFromLatArc = Angle2Arc(vFromLat);
     var vToLatArc = Angle2Arc(vToLat);
@@ -14,7 +14,7 @@ function ComputeHeading(vFromLat, vFromLon, vToLat, vToLon) {
     return rHeading;
 }
 
-/// 角度转弧度            
+/// 角度转弧度
 function Angle2Arc(vAngle) {
     return vAngle * Math.PI / 180.0;
 }
@@ -52,7 +52,7 @@ function IsApproximateZero(vNum) {
     }
 }
 
-// 获取射线与线段的交点 
+// 获取射线与线段的交点
 //vLat0:射线端点纬度 vLon0:射线端点经度 vHeading:射线航向角
 //vLat1:线段端点1纬度 vLon1:线段端点1经度 vLat2:线段端点2纬度 vLon2:线段端点2经度
 function LineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2) {
@@ -141,12 +141,12 @@ function LineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2) {
     return tuple;
 }
 
-//求1到2的方位角(圆心在1上，角度制)    
+//求1到2的方位角(圆心在1上，角度制)
 function GetAzimuth(vLat1, vLon1, vLat2, vLon2) {
     return ComputeHeading(vLat1, vLon1, vLat2, vLon2);
 }
 
-// 获取两点间线段距离        
+// 获取两点间线段距离
 function GetLatLonDistance(vLat1, vLon1, vLat2, vLon2) {
     return Math.sqrt(Math.pow(vLat1 - vLat2, 2) + Math.pow(vLon1 - vLon2, 2));
 }
@@ -507,10 +507,10 @@ Page({
                         var mubiaodian0//最小维度的点为mubiaodian0
                         var headingangle = parseInt(that.data.headingangle)//航向角的值
                         for (var i = 0; i < len1; i++) {
-                            if (testArray[i].longitude == minlongitude) {
+                            if (testArray[i].longitude == minlongitude) {//最小精度
                                 mubiaodian = testArray[i]
                             }
-                            if (testArray[i].latitude == minlatitude) {
+                            if (testArray[i].latitude == minlatitude) {//最小纬度
                                 mubiaodian0 = testArray[i]
                             }
                         }
