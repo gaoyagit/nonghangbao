@@ -371,20 +371,53 @@ Page({
 
         var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, 30, weiduMinPoint.latitude);
 
-        basePoint = this.ComputeOffset(basePoint.latitude, basePoint.longitude, 25, 30 + 90);
+        basePoint = this.ComputeOffset(basePoint.latitude, basePoint.longitude, 50, 30 + 90);
         var basePointCrossPointArray = [];
-        var firstCrossPoints = []
+        var crossPoints = []
         for (var i = 0; i < length; i++) {
             //从中间点出发的射线和作业区的交点
             basePointCrossPointArray = LineCross(basePoint.latitude, basePoint.longitude, 30, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
             if (basePointCrossPointArray.length > 0) {
-                firstCrossPoints.push({
+                crossPoints.push({
                     longitude: basePointCrossPointArray[0].longitude,
                     latitude: basePointCrossPointArray[0].latitude
                 })
             }
         }
-        this.data.crossPoints.push.call(firstCrossPoints,firstCrossPoints);
+        var crossPointsKey = 0;
+
+        while( crossPoints.length > 0 ){
+            this.data.crossPoints[crossPointsKey] = crossPoints.slice(0);
+            crossPointsKey++;
+
+            crossPoints.length=0;
+
+            basePoint = this.ComputeOffset(basePoint.latitude, basePoint.longitude, 100, 30 + 90);
+            var basePointCrossPointArray = [];
+            for (var i = 0; i < length; i++) {
+                //从中间点出发的射线和作业区的交点
+                basePointCrossPointArray = LineCross(basePoint.latitude, basePoint.longitude, 30, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
+                if (basePointCrossPointArray.length > 0) {
+                    crossPoints.push({
+                        longitude: basePointCrossPointArray[0].longitude,
+                        latitude: basePointCrossPointArray[0].latitude
+                    })
+                }
+            }
+        }
+        for (var j = 0; j < this.data.crossPoints.length; j++) {
+
+            this.data.polyline[j + 1] = {
+                points: this.data.crossPoints[j],
+                color: "#128612",
+                width: 2,
+                dottedLine: false,
+            }
+            this.setData({
+                polyline: this.data.polyline
+            })
+
+        }
 
     }
     ,
@@ -400,7 +433,11 @@ Page({
             //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
             latitude: vLat1
         })
-        return basepoint;
+        return {
+            longitude: -(C0 + B0 * vLat1) / A0,
+            //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+            latitude: vLat1
+        };
     },
     ComputeOffset:function(vLat, vLon, vDistance, vHeading) {
         var pDistanceArc = vDistance / vRadius;
@@ -413,74 +450,8 @@ Page({
         var rLatS = pDAC * pLAS + pDAS * pLAC * Math.cos(pHArc);
         return {
             latitude:Arc2Angle(Math.asin(rLatS)),
-            longitude:Arc2Angle(Angle2Arc(vLon) + Math.atan2(pDAS * pLAC * Math.sin(pHArc), pDAC - pLAS * rLatS));
+            longitude:Arc2Angle(Angle2Arc(vLon) + Math.atan2(pDAS * pLAC * Math.sin(pHArc), pDAC - pLAS * rLatS))
         }
     },
 
 })
-
-// showModalToChoosePlaneLoaction:function(){
-//     var _this = this;
-//     wx.showModal({
-//         title: '提示',
-//         content: '请先选择飞机的起点',
-//         showCancel:false,
-//         success:function(){
-//             wx.chooseLocation({
-//                 success:function(params){
-//                     console.log(params)
-//                     _this.setData({
-//                         startPosition:{
-//                             latitude:params.latitude,
-//                             longitude:params.longitude,
-//                             address:params.address,
-//                         },
-//                         markers: [{
-//                             iconPath: "/pages/images/plane.png",
-//                             id: 0,
-//                             latitude: params.latitude,
-//                             longitude: params.longitude,
-//                             width: 25,
-//                             height: 25,
-//                             callout:{
-//                                 content:'点击飞机重新选择位置',
-//                                 display:'ALWAYS',
-//                             }
-//                         }],
-//                     })
-//                 },
-//                 cancel:function(){
-//                     _this.showModalToChoosePlaneLoaction();
-//                 }
-//             })
-//         }
-//     })
-// },
-// markertap:function(e) {
-//     var _this = this;
-//     if(e.markerId==0){
-//         wx.showModal({
-//             title: '提示',
-//             content: '是否要重新选择飞机的起始位置？',
-//             success:function(res){
-//                 if (res.confirm) {
-//                     wx.chooseLocation({
-//                         success:function(params){
-//                             _this.data.markers[0].latitude=params.latitude;
-//                             _this.data.markers[0].longitude=params.longitude;
-//
-//                             _this.setData({
-//                                 startPosition:{
-//                                     latitude:params.latitude,
-//                                     longitude:params.longitude,
-//                                     address:params.address,
-//                                 },
-//                                 markers: _this.data.markers,
-//                             })
-//                         },
-//                     })
-//                 }
-//             },
-//         })
-//     }
-// },
