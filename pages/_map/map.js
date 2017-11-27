@@ -188,7 +188,7 @@ Page({
 
         navButtonDisplay:1,//导航按钮
 
-        headingAngle: 30,//航向角的值
+        headingAngle:30,//航向角的值
 
         crossPoints:[],
 
@@ -321,7 +321,7 @@ Page({
             //setOperateWidthViewDisplay:1,
         })
         this.generateNavLine();
-        this.startNavigation();
+        //this.startNavigation();
     },
     setOperateWidth:function(e){
         this.setData({
@@ -362,25 +362,37 @@ Page({
         var _this = this;
         var polylineLength = this.data.polyline.length;
         var result = this.findLatelyNavLine(this.data.liveLocation,this.data.polyline);
+
         this.data.polyline[polylineLength] = {
             points: [this.data.liveLocation,this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
             color: "#128612",
             width: 2,
-            dottedLine: false,
+            dottedLine: true,
         }
+
         this.setData({
             polyline:this.data.polyline
         })
+
+        setTimeout(getLiveLocation.bind(this),2000);
 
         function getLiveLocation(){
             wx.getLocation({
                 type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
                 success: function (res) {
-                    _this.data.liveLocation = {
+                    this.data.liveLocation = {
                         latitude: res.latitude,
                         longitude: res.longitude,
-                    },
-                    _this.setData({
+                    };
+                    console.log(this.data.liveLocation);
+                    this.data.polyline[polylineLength] = {
+                        points: [this.data.liveLocation,this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
+                        color: "#128612",
+                        width: 2,
+                        dottedLine: true,
+                    }
+
+                    this.setData({
                         liveLocation:{
                             latitude: res.latitude,
                             longitude: res.longitude,
@@ -443,10 +455,10 @@ Page({
             }
         }
 
-        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, this.data.headingAngle, weiduMinPoint.latitude);
+        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, this.data.headingAngle, weiduMinPoint.latitude,this.data.polyline[0].points);
 
         //第一次根据基准点求偏移点，偏移量是幅宽的一半
-        var basePointOffset = this.ComputeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , this.data.headingAngle + 90);
+        var basePointOffset = this.ComputeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , (this.data.headingAngle + 90)%180);
 
         //放置的根据每一个偏移点和作业区的交点的集合。如果为空，就说明根据该偏移点，没有航线生成，求航线的逻辑可以结束。
         var crossPoints = [];
@@ -470,7 +482,7 @@ Page({
 
             crossPoints.length=0;
             //根据偏移点求偏移点，偏移量是幅宽
-            basePointOffset = this.ComputeOffset(basePointOffset.latitude, basePointOffset.longitude, this.data.operateWidth, this.data.headingAngle + 90);
+            basePointOffset = this.ComputeOffset(basePointOffset.latitude, basePointOffset.longitude, this.data.operateWidth, (this.data.headingAngle + 90)%180);
 
             tempCrossPointArray = [];
 
@@ -495,29 +507,42 @@ Page({
                 dottedLine: false,
             }
         }
+        console.log(this.data.polyline);
         this.setData({
             polyline: this.data.polyline
         })
 
     },
     //找到中间点的基点，即第一个点的函数,求航线和作业区交点的第一个点，（这个点根据已知直线和点以及点在直线的角度，求交点得出的）
-    basePoint:function(vLat0, vLon0, vHeading, vLat1) {
-        var basepoint = []
+    basePoint:function(vLat0, vLon0, vHeading, vLat1, allPoints) {
+        // A0*X + Bo*Y + C0 = 0
         var pKAngle = Heading2KAndgle(vHeading);
-        var A0 = Math.tan(pKAngle * Math.PI / 180);
+        var A0 = Math.tan(pKAngle * Math.PI / 180);//斜率
         var B0 = -1;
         var C0 = vLat0 - Math.tan(pKAngle * Math.PI / 180) * vLon0;
-        basepoint.push({
-            longitude: -(C0 + B0 * vLat1) / A0,
-            //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
-            latitude: vLat1
-        })
+
+        //求出距离 经过最小经度点的直线的左边最远的点
+        var result = 0,resultKey = 0,flag = false;
+
+        for(var i = 0 ; i < allPoints.length-1 ; i ++ ){
+            if(A0*allPoints[i].longitude+B0*allPoints[i].latitude+C0 < result){
+                resultKey=i;
+                result = A0*allPoints[i].longitude+B0*allPoints[i].latitude+C0;
+                flag = true;
+            }
+        }
+        //如果有点在直线的左边，那就重新设置C0
+        if(flag){
+            C0 = allPoints[resultKey].latitude - Math.tan(pKAngle * Math.PI / 180) * allPoints[resultKey].longitude;
+        }
+
         return {
             longitude: -(C0 + B0 * vLat1) / A0,
             //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
             latitude: vLat1
         };
     },
+
     //已知一个点、距离、航向角，求终点
     ComputeOffset:function(vLat, vLon, vDistance, vHeading) {
         var pDistanceArc = vDistance / vRadius;
