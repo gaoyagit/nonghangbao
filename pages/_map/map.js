@@ -321,7 +321,9 @@ Page({
             //setOperateWidthViewDisplay:1,
         })
         this.generateNavLine();
-        this.startNavigation();
+        //异步处理，设置新生成的航线可能没重新渲染完毕
+        setTimeout(this.startNavigation,500);
+        //this.startNavigation();
     },
     setOperateWidth:function(e){
         this.setData({
