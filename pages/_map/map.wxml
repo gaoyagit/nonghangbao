@@ -29,15 +29,16 @@
     </view>
 
     <view class="setOperateWidthView" style="width: 100%; display:{{!setOperateWidthViewDisplay?'none':'block'}};">
-          <label>设置幅宽</label>
+          <label>设置幅宽和航向角</label>
           <input type="number" bindinput="setOperateWidth" placeholder="请在这里输入幅宽"></input>
+          <input type="number" bindinput="setHeadingAngle" placeholder="请在这里输入航向角"></input>
           <button type="default" style="width: 70%;" bindtap="finishSetOperateWidthView" size="default">确定</button>
     </view>
 
     <view class="navView" style="width: 100%; display:{{!navViewDisplay?'none':'block'}};">
             <button type="default"
                     style="display:{{!navButtonDisplay?'none':'block'}};"
-                    bindtap="setOperationArea" size="default">开始导航</button>
+                    bindtap="startNavigation" size="default">开始导航</button>
             <button type="warn"
                     style="display:{{navButtonDisplay?'none':'block'}};"
                     bindtap="setOperationArea" size="default">结束导航</button>

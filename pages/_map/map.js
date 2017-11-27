@@ -179,7 +179,7 @@ Page({
         scale:'14',
         operationDisplay:1,//控制是否显示设置作业区的按钮的选项
         operationArray:[],//生成作业区的各个坐标点的数组
-        operateWidth:100,//幅宽，也就是作业宽度
+        operateWidth:0,//幅宽，也就是作业宽度
 
         mapViewDisplay:1,//地图view
         operateViewDisplay:1,//设置作业区view
@@ -214,7 +214,7 @@ Page({
             success: function(res){
                 _this.setData({
                     windowHeight: res.windowHeight,//屏幕高度
-                    mapHeight: res.windowHeight-106,//46
+                    mapHeight: res.windowHeight-46,//46
                     controls: [{
                         id: 1,
                         iconPath: '/pages/images/location3.png',
@@ -230,7 +230,7 @@ Page({
                         iconPath: '/pages/images/circle_location.png',
                         position: {
                             left: res.windowWidth-60,
-                            top: res.windowHeight-206,//待调整
+                            top: res.windowHeight-146,//待调整
                             width: 40,
                             height: 40
                         },
@@ -316,31 +316,33 @@ Page({
     },
     finishSetOperationArea:function(){
         this.setData({
-            //mapViewDisplay:0,
+            mapViewDisplay:0,
             operateViewDisplay:0,
-            //setOperateWidthViewDisplay:1,
+            setOperateWidthViewDisplay:1,
         })
-        this.generateNavLine();
+        //this.generateNavLine();
         //异步处理，设置新生成的航线可能没重新渲染完毕
-        setTimeout(this.startNavigation,500);
+        //setTimeout(this.startNavigation,500);
         //this.startNavigation();
     },
     setOperateWidth:function(e){
         this.setData({
-            operateWidth:e.detail.value,
+            operateWidth:parseInt(e.detail.value),
+        })
+    },
+    setHeadingAngle:function(e){
+        this.setData({
+            headingAngle:parseInt(e.detail.value),
         })
     },
     finishSetOperateWidthView:function(){
         this.setData({
-
             mapViewDisplay:1,
             operateViewDisplay:0,
             setOperateWidthViewDisplay:0,
-
             navViewDisplay:1,
         })
         this.generateNavLine();
-
     },
 
 
