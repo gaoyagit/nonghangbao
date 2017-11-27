@@ -188,7 +188,7 @@ Page({
 
         navButtonDisplay:1,//导航按钮
 
-        headingAngle:30,//航向角的值
+        headingAngle:0,//航向角的值
 
         crossPoints:[],
 
@@ -439,6 +439,7 @@ Page({
     //生成航线
     generateNavLine:function() {
         var weiduMinPoint, jingduMinPoint;
+        var headingAngle = this.data.headingAngle < 0 ? this.data.headingAngle+180 : this.data.headingAngle;
         var copyOperationArray = JSON.parse(JSON.stringify(this.data.operationArray));
 
         weiduMinPoint = copyOperationArray[0];
@@ -455,10 +456,10 @@ Page({
             }
         }
 
-        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, this.data.headingAngle, weiduMinPoint.latitude,this.data.polyline[0].points);
+        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, headingAngle, weiduMinPoint.latitude,this.data.polyline[0].points);
 
         //第一次根据基准点求偏移点，偏移量是幅宽的一半
-        var basePointOffset = this.ComputeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , (this.data.headingAngle + 90)%180);
+        var basePointOffset = this.ComputeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , headingAngle + 90);
 
         //放置的根据每一个偏移点和作业区的交点的集合。如果为空，就说明根据该偏移点，没有航线生成，求航线的逻辑可以结束。
         var crossPoints = [];
@@ -482,7 +483,7 @@ Page({
 
             crossPoints.length=0;
             //根据偏移点求偏移点，偏移量是幅宽
-            basePointOffset = this.ComputeOffset(basePointOffset.latitude, basePointOffset.longitude, this.data.operateWidth, (this.data.headingAngle + 90)%180);
+            basePointOffset = this.ComputeOffset(basePointOffset.latitude, basePointOffset.longitude, this.data.operateWidth, headingAngle + 90);
 
             tempCrossPointArray = [];
 
