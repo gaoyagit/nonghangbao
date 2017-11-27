@@ -321,7 +321,7 @@ Page({
             //setOperateWidthViewDisplay:1,
         })
         this.generateNavLine();
-        //this.startNavigation();
+        this.startNavigation();
     },
     setOperateWidth:function(e){
         this.setData({
@@ -380,19 +380,19 @@ Page({
             wx.getLocation({
                 type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
                 success: function (res) {
-                    this.data.liveLocation = {
+                    _this.data.liveLocation = {
                         latitude: res.latitude,
                         longitude: res.longitude,
                     };
-                    console.log(this.data.liveLocation);
-                    this.data.polyline[polylineLength] = {
-                        points: [this.data.liveLocation,this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
+                    console.log(_this.data.liveLocation);
+                    _this.data.polyline[polylineLength] = {
+                        points: [_this.data.liveLocation,_this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
                         color: "#128612",
                         width: 2,
                         dottedLine: true,
                     }
 
-                    this.setData({
+                    _this.setData({
                         liveLocation:{
                             latitude: res.latitude,
                             longitude: res.longitude,
@@ -417,13 +417,13 @@ Page({
         };
         var lenOfLastNavLine0 = {
             value:Math.pow( ((startPoint.longitude-polyline[polylineLength-1].points[0].longitude)*111000),2)+Math.pow( ((startPoint.latitude-polyline[polylineLength-1].points[0].latitude)*111000),2),
-            lineIndex:polylineLength,
+            lineIndex:polylineLength-1,
             linePointsIndex:0,
         };
 
         var lenOfLastNavLine1 = {
             value:Math.pow( ((startPoint.longitude-polyline[polylineLength-1].points[1].longitude)*111000),2)+Math.pow( ((startPoint.latitude-polyline[polylineLength-1].points[1].latitude)*111000),2),
-            lineIndex:polylineLength,
+            lineIndex:polylineLength-1,
             linePointsIndex:1,
         };
         var arr = [lenOfFirstNavLine0,lenOfFirstNavLine1,lenOfLastNavLine0,lenOfLastNavLine1];
