@@ -191,6 +191,8 @@ Page({
         headingAngle: 30,//航向角的值
 
         crossPoints:[],
+
+        liveLocation:{},
     },
     onLoad:function(){
         var _this = this;
@@ -199,7 +201,11 @@ Page({
             success: function (res) {
                 _this.setData({
                     latitude:res.latitude,
-                    longitude:res.longitude
+                    longitude:res.longitude,
+                    startPosition:{
+                        latitude:res.latitude,
+                        longitude:res.longitude,
+                    }
                 })
             },
         })
@@ -309,13 +315,13 @@ Page({
         })
     },
     finishSetOperationArea:function(){
-        // this.setData({
-        //     mapViewDisplay:0,
-        //     operateViewDisplay:0,
-        //     setOperateWidthViewDisplay:1,
-        // })
-       // var minPointIndex = this.findMinLength();
+        this.setData({
+            //mapViewDisplay:0,
+            operateViewDisplay:0,
+            //setOperateWidthViewDisplay:1,
+        })
         this.generateNavLine();
+        this.startNavigation();
     },
     setOperateWidth:function(e){
         this.setData({
@@ -335,6 +341,7 @@ Page({
 
     },
 
+
     changeCircleLocationColor:function(){
         this.data.controls[1].iconPath = '/pages/images/circle_location_green.png';
         this.setData({
@@ -349,11 +356,78 @@ Page({
         },1000);
     },
 
+    //开始导航
+    startNavigation:function(){
+        this.data.liveLocation = this.data.startPosition;
+        var _this = this;
+        var polylineLength = this.data.polyline.length;
+        var result = this.findLatelyNavLine(this.data.liveLocation,this.data.polyline);
+        this.data.polyline[polylineLength] = {
+            points: [this.data.liveLocation,this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
+            color: "#128612",
+            width: 2,
+            dottedLine: false,
+        }
+        this.setData({
+            polyline:this.data.polyline
+        })
+
+        function getLiveLocation(){
+            wx.getLocation({
+                type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
+                success: function (res) {
+                    _this.data.liveLocation = {
+                        latitude: res.latitude,
+                        longitude: res.longitude,
+                    },
+                    _this.setData({
+                        liveLocation:{
+                            latitude: res.latitude,
+                            longitude: res.longitude,
+                        }
+                    })
+                }
+            })
+        }
+    },
+    findLatelyNavLine:function(startPoint,polyline){
+        var polylineLength = polyline.length;
+
+        var lenOfFirstNavLine0 = {
+            value:Math.pow( ((startPoint.longitude-polyline[1].points[0].longitude)*111000),2)+Math.pow( ((startPoint.latitude-polyline[1].points[0].latitude)*111000),2),
+            lineIndex:1,
+            linePointsIndex:0,
+        };
+        var lenOfFirstNavLine1 = {
+            value:Math.pow( ((startPoint.longitude-polyline[1].points[1].longitude)*111000),2)+Math.pow( ((startPoint.latitude-polyline[1].points[1].latitude)*111000),2),
+            lineIndex:1,
+            linePointsIndex:1,
+        };
+        var lenOfLastNavLine0 = {
+            value:Math.pow( ((startPoint.longitude-polyline[polylineLength-1].points[0].longitude)*111000),2)+Math.pow( ((startPoint.latitude-polyline[polylineLength-1].points[0].latitude)*111000),2),
+            lineIndex:polylineLength,
+            linePointsIndex:0,
+        };
+
+        var lenOfLastNavLine1 = {
+            value:Math.pow( ((startPoint.longitude-polyline[polylineLength-1].points[1].longitude)*111000),2)+Math.pow( ((startPoint.latitude-polyline[polylineLength-1].points[1].latitude)*111000),2),
+            lineIndex:polylineLength,
+            linePointsIndex:1,
+        };
+        var arr = [lenOfFirstNavLine0,lenOfFirstNavLine1,lenOfLastNavLine0,lenOfLastNavLine1];
+        arr.sort(function(itema,itemb){
+            return itema.value-itemb.value
+        });
+        return {
+            lineIndex:arr[0].lineIndex,
+            linePointsIndex:arr[0].linePointsIndex,
+        }
+
+    },
     //生成航线
     generateNavLine:function() {
-        var _this = this;
         var weiduMinPoint, jingduMinPoint;
-        var copyOperationArray = JSON.parse(JSON.stringify(_this.data.operationArray));
+        var copyOperationArray = JSON.parse(JSON.stringify(this.data.operationArray));
 
         weiduMinPoint = copyOperationArray[0];
         jingduMinPoint = copyOperationArray[0];
@@ -420,11 +494,10 @@ Page({
                 width: 2,
                 dottedLine: false,
             }
-            this.setData({
-                polyline: this.data.polyline
-            })
-
         }
+        this.setData({
+            polyline: this.data.polyline
+        })
 
     },
     //找到中间点的基点，即第一个点的函数,求航线和作业区交点的第一个点，（这个点根据已知直线和点以及点在直线的角度，求交点得出的）
