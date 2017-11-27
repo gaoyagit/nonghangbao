@@ -369,7 +369,7 @@ Page({
         this.data.polyline[polylineLength] = {
             points: [this.data.liveLocation,this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
             color: "#128612",
-            width: 2,
+            width: 5,
             dottedLine: true,
         }
 
@@ -381,22 +381,42 @@ Page({
 
         if( result.lineIndex == 1 ){
             for( var i = 1 ; i < this.data.polyline.length ; i ++ ) {
-                if( result.linePointsIndex==0 && i % 2 == 0){
-                    navPoints.push(this.data.polyline[i].points[1])
-                    navPoints.push(this.data.polyline[i].points[0])
+                if(result.linePointsIndex==0){
+                    if(i % 2 == 0){
+                        navPoints.push(this.data.polyline[i].points[1])
+                        navPoints.push(this.data.polyline[i].points[0])
+                    }else{
+                        navPoints.push(this.data.polyline[i].points[0])
+                        navPoints.push(this.data.polyline[i].points[1])
+                    }
                 }else{
-                    navPoints.push(this.data.polyline[i].points[0])
-                    navPoints.push(this.data.polyline[i].points[1])
+                    if(i % 2 == 0){
+                        navPoints.push(this.data.polyline[i].points[0])
+                        navPoints.push(this.data.polyline[i].points[1])
+                    }else{
+                        navPoints.push(this.data.polyline[i].points[1])
+                        navPoints.push(this.data.polyline[i].points[0])
+                    }
                 }
             }
         }else{
             for( var i = this.data.polyline.length - 1 ,count=1; i > 0 ; i -- ,count++) {
-                if( result.linePointsIndex == 0 && count% 2 == 0 ){
-                    navPoints.push(this.data.polyline[i].points[1])
-                    navPoints.push(this.data.polyline[i].points[0])
+                if(result.linePointsIndex == 0 ){
+                    if( count% 2 == 0 ){
+                        navPoints.push(this.data.polyline[i].points[1])
+                        navPoints.push(this.data.polyline[i].points[0])
+                    }else{
+                        navPoints.push(this.data.polyline[i].points[0])
+                        navPoints.push(this.data.polyline[i].points[1])
+                    }
                 }else{
-                    navPoints.push(this.data.polyline[i].points[0])
-                    navPoints.push(this.data.polyline[i].points[1])
+                    if( count% 2 == 0 ){
+                        navPoints.push(this.data.polyline[i].points[0])
+                        navPoints.push(this.data.polyline[i].points[1])
+                    }else{
+                        navPoints.push(this.data.polyline[i].points[1])
+                        navPoints.push(this.data.polyline[i].points[0])
+                    }
                 }
             }
         }
@@ -423,7 +443,7 @@ Page({
                     _this.data.polyline[polylineLength] = {
                         points: [_this.data.liveLocation,navPoints[navIndex]],
                         color: "#128612",
-                        width: 2,
+                        width: 5,
                         dottedLine: true,
                     }
 
