@@ -179,7 +179,7 @@ Page({
         scale:'14',
         operationDisplay:1,//控制是否显示设置作业区的按钮的选项
         operationArray:[],//生成作业区的各个坐标点的数组
-        operateWidth:0,//幅宽，也就是作业宽度
+        operateWidth:100,//幅宽，也就是作业宽度
 
         mapViewDisplay:1,//地图view
         operateViewDisplay:1,//设置作业区view
@@ -188,7 +188,7 @@ Page({
 
         navButtonDisplay:1,//导航按钮
 
-        headingAngle: 0,//航向角的值
+        headingAngle: 30,//航向角的值
 
         crossPoints:[],
     },
@@ -233,7 +233,6 @@ Page({
                 })
             }
         })
-        //this.showModalToChoosePlaneLoaction();
     },
 
     controltap:function(e) {
@@ -303,6 +302,7 @@ Page({
             width: 2,
             dottedLine: true
         }
+        this.data.polyline.length = 1;
         this.setData({
             operationArray: this.data.operationArray,
             polyline: this.data.polyline
@@ -369,42 +369,49 @@ Page({
             }
         }
 
-        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, 30, weiduMinPoint.latitude);
+        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, this.data.headingAngle, weiduMinPoint.latitude);
 
-        basePoint = this.ComputeOffset(basePoint.latitude, basePoint.longitude, 50, 30 + 90);
-        var basePointCrossPointArray = [];
-        var crossPoints = []
+        //第一次根据基准点求偏移点，偏移量是幅宽的一半
+        var basePointOffset = this.ComputeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , this.data.headingAngle + 90);
+
+        //放置的根据每一个偏移点和作业区的交点的集合。如果为空，就说明根据该偏移点，没有航线生成，求航线的逻辑可以结束。
+        var crossPoints = [];
+
+        var tempCrossPointArray = [];
+
         for (var i = 0; i < length; i++) {
-            //从中间点出发的射线和作业区的交点
-            basePointCrossPointArray = LineCross(basePoint.latitude, basePoint.longitude, 30, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
-            if (basePointCrossPointArray.length > 0) {
+            //从偏移点出发的射线和作业区的交点
+            tempCrossPointArray = LineCross(basePointOffset.latitude, basePointOffset.longitude, this.data.headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
+            if (tempCrossPointArray.length > 0) {
                 crossPoints.push({
-                    longitude: basePointCrossPointArray[0].longitude,
-                    latitude: basePointCrossPointArray[0].latitude
+                    longitude: tempCrossPointArray[0].longitude,
+                    latitude: tempCrossPointArray[0].latitude
                 })
             }
         }
-        var crossPointsKey = 0;
 
         while( crossPoints.length > 0 ){
-            this.data.crossPoints[crossPointsKey] = crossPoints.slice(0);
-            crossPointsKey++;
+
+            this.data.crossPoints.push(crossPoints.slice(0));
 
             crossPoints.length=0;
+            //根据偏移点求偏移点，偏移量是幅宽
+            basePointOffset = this.ComputeOffset(basePointOffset.latitude, basePointOffset.longitude, this.data.operateWidth, this.data.headingAngle + 90);
 
-            basePoint = this.ComputeOffset(basePoint.latitude, basePoint.longitude, 100, 30 + 90);
-            var basePointCrossPointArray = [];
+            tempCrossPointArray = [];
+
             for (var i = 0; i < length; i++) {
-                //从中间点出发的射线和作业区的交点
-                basePointCrossPointArray = LineCross(basePoint.latitude, basePoint.longitude, 30, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
-                if (basePointCrossPointArray.length > 0) {
+                //从偏移点出发的射线和作业区的交点
+                tempCrossPointArray = LineCross(basePointOffset.latitude, basePointOffset.longitude, this.data.headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
+                if (tempCrossPointArray.length > 0) {
                     crossPoints.push({
-                        longitude: basePointCrossPointArray[0].longitude,
-                        latitude: basePointCrossPointArray[0].latitude
+                        longitude: tempCrossPointArray[0].longitude,
+                        latitude: tempCrossPointArray[0].latitude
                     })
                 }
             }
         }
+
         for (var j = 0; j < this.data.crossPoints.length; j++) {
 
             this.data.polyline[j + 1] = {
@@ -419,8 +426,7 @@ Page({
 
         }
 
-    }
-    ,
+    },
     //找到中间点的基点，即第一个点的函数,求航线和作业区交点的第一个点，（这个点根据已知直线和点以及点在直线的角度，求交点得出的）
     basePoint:function(vLat0, vLon0, vHeading, vLat1) {
         var basepoint = []
@@ -439,6 +445,7 @@ Page({
             latitude: vLat1
         };
     },
+    //已知一个点、距离、航向角，求终点
     ComputeOffset:function(vLat, vLon, vDistance, vHeading) {
         var pDistanceArc = vDistance / vRadius;
         var pHArc = Angle2Arc(vHeading);
