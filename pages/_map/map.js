@@ -363,6 +363,7 @@ Page({
         this.data.liveLocation = this.data.startPosition;
         var _this = this;
         var polylineLength = this.data.polyline.length;
+
         var result = this.findLatelyNavLine(this.data.liveLocation,this.data.polyline);
 
         this.data.polyline[polylineLength] = {
@@ -376,8 +377,33 @@ Page({
             polyline:this.data.polyline
         })
 
-        setTimeout(getLiveLocation.bind(this),2000);
+        var navPoints=[];
 
+        if( result.lineIndex == 1 ){
+            for( var i = 1 ; i < this.data.polyline.length ; i ++ ) {
+                if( result.linePointsIndex==0 && i % 2 == 0){
+                    navPoints.push(this.data.polyline[i].points[1])
+                    navPoints.push(this.data.polyline[i].points[0])
+                }else{
+                    navPoints.push(this.data.polyline[i].points[0])
+                    navPoints.push(this.data.polyline[i].points[1])
+                }
+            }
+        }else{
+            for( var i = this.data.polyline.length - 1 ,count=1; i > 0 ; i -- ,count++) {
+                if( result.linePointsIndex == 0 && count% 2 == 0 ){
+                    navPoints.push(this.data.polyline[i].points[1])
+                    navPoints.push(this.data.polyline[i].points[0])
+                }else{
+                    navPoints.push(this.data.polyline[i].points[0])
+                    navPoints.push(this.data.polyline[i].points[1])
+                }
+            }
+        }
+
+        setInterval(getLiveLocation,2000);
+
+        var navIndex = 0;
         function getLiveLocation(){
             wx.getLocation({
                 type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
@@ -386,24 +412,30 @@ Page({
                         latitude: res.latitude,
                         longitude: res.longitude,
                     };
-                    console.log(_this.data.liveLocation);
+
+                    var len = Math.pow( ((res.longitude - navPoints[navIndex].longitude)*111000),2)+Math.pow( ((res.latitude - navPoints[navIndex].latitude)*111000),2);
+
+                    //距离小于5m时，自动导航到下一个点
+                    if(len <= 5){
+                        navIndex ++ ;
+                    }
+
                     _this.data.polyline[polylineLength] = {
-                        points: [_this.data.liveLocation,_this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
+                        points: [_this.data.liveLocation,navPoints[navIndex]],
                         color: "#128612",
                         width: 2,
                         dottedLine: true,
                     }
 
                     _this.setData({
-                        liveLocation:{
-                            latitude: res.latitude,
-                            longitude: res.longitude,
-                        }
+                        polyline:_this.data.polyline,
+                        liveLocation:_this.data.liveLocation
                     })
                 }
             })
         }
     },
+    //找到离出发点最近的航线，以及该航线上离出发点最近的点。
     findLatelyNavLine:function(startPoint,polyline){
         var polylineLength = polyline.length;
 
