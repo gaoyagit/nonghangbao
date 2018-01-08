@@ -29,12 +29,12 @@
           right-icon="success_no_circle" min="10" max="100"/>
       </view>  -->
       
-       <view style='float:left'><label>设置幅宽：</label></view>
+      <view style='float:left'><label>设置幅宽：</label></view>
       <view style='float:left'><input bindinput='widthInput' placeholder='输入幅宽值' type='text'></input></view>  
       
   </view>
   <view class="section section_gap" style='overflow:hidden'>
-     <view style='float:left'><label>设置航向角：</label></view>
+      <view style='float:left'><label>设置航向角：</label></view>
       <view style='float:left'><input bindinput='headingAngleInput' placeholder='输入航向角' type='text'></input></view> 
   </view>
   

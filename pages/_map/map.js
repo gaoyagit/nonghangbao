@@ -190,9 +190,11 @@ Page({
 
         headingAngle:0,//航向角的值
 
-        crossPoints:[],
+        crossPoints:[],//这个是什么？中间点与作业区的交点吗？
 
-        liveLocation:{},
+        liveLocation:{},//这是什么？导航时，经过的点？
+
+        stopFlag: 0//当stopFlag为1时清空导航的计时器，结束导航
     },
     onLoad:function(){
         var _this = this;
@@ -240,7 +242,7 @@ Page({
             }
         })
     },
-
+    //生成作业区的点，形成作业区域
     controltap:function(e) {
         var _this = this;
         if (e.controlId === 1) {//红色的定位
@@ -359,7 +361,7 @@ Page({
             })
         },1000);
     },
-
+    
     //开始导航
     startNavigation:function(){
         this.data.liveLocation = this.data.startPosition;
@@ -367,7 +369,7 @@ Page({
         var polylineLength = this.data.polyline.length;
 
         var result = this.findLatelyNavLine(this.data.liveLocation,this.data.polyline);
-
+        //this.data.polyline[result.lineIndex].points[result.linePointsIndex]是什么意思？是不是找到最近的点？
         this.data.polyline[polylineLength] = {
             points: [this.data.liveLocation,this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
             color: "#128612",
@@ -423,10 +425,14 @@ Page({
             }
         }
 
-        setInterval(getLiveLocation,2000);
-
+        // var startNav = setInterval(getLiveLocation,2000);
+        var startGetLiveLocation = setInterval(getLiveLocation, 2000);
         var navIndex = 0;
         function getLiveLocation(){
+          if (_this.data.stopFlag){
+                clearInterval(startGetLiveLocation);
+                return;
+              }
             wx.getLocation({
                 type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
                 success: function (res) {
@@ -457,6 +463,15 @@ Page({
             })
         }
     },
+
+    //结束导航
+    finishNavigation:function(){
+      // clearInterval(startNav);
+      this.setData({
+        stopFlag:1
+      })
+    },
+    
     //找到离出发点最近的航线，以及该航线上离出发点最近的点。
     findLatelyNavLine:function(startPoint,polyline){
         var polylineLength = polyline.length;

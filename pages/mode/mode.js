@@ -10,7 +10,17 @@ Page({
   selfbuilt:function()
   {
     wx.navigateTo({
-      url: '../../pages/map/map'
+      url: '../../pages/_map/map'
+    })
+  },
+  receive: function () {
+    wx.navigateTo({
+      url: '../../pages/jsmap/map'
+    })
+  },
+  default: function () {
+    wx.navigateTo({
+      url: '../../pages/qsmap/qsmap'
     })
   },
 
