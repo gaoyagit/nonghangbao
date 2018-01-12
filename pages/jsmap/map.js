@@ -195,8 +195,8 @@ Page({
     liveLocation: {},//这是什么？导航时，经过的点？
 
     stopFlag: 0,//当stopFlag为1时清空导航的计时器，结束导航
-
-    shengChengHangXianFlag:0
+   
+    navigationDot:[],//飞机飞行经过的点
   },
   onLoad: function () {
     var _this = this;
@@ -332,13 +332,21 @@ Page({
   },
 
   finishSetOperationArea: function () {
+    var self = this;
     wx.showModal({
       title: '提示框',
       content: '是否生成航线',
       success: function (res) {//应该在这个位置生成航线
         if (res.confirm) {
           console.log('用户点击确定')
-          this.shengChengHangXianFlag = 1
+          // this.shengChengHangXianFlag = 1
+          self.generateNavLine();
+          self.setData({
+            mapViewDisplay: 1,
+            operateViewDisplay: 0,
+            setOperateWidthViewDisplay: 0,
+            navViewDisplay: 1,
+    })
         } else if (res.cancel) {
           console.log('用户点击取消')
           // this.generateNavLine();
@@ -412,7 +420,7 @@ Page({
     this.data.polyline[polylineLength] = {
       points: [this.data.liveLocation, this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
       color: "#128612",
-      width: 5,
+      width: 2,
       dottedLine: true,
     }
 
@@ -465,10 +473,11 @@ Page({
     }
 
     // var startNav = setInterval(getLiveLocation,2000);
-    var startGetLiveLocation = setInterval(getLiveLocation, 2000);
+    var polylineLengthNav = this.data.polyline.length;//找到polyline的长度，在polyline[polylineLengthNav]存放飞机作业时经过的点
+    var startGetLiveLocation = setInterval(getLiveLocation, 2000);//方便关闭startGetLiveLocation定时器
     var navIndex = 0;
     function getLiveLocation() {
-      if (_this.data.stopFlag) {
+      if (_this.data.stopFlag) {//如果stopFlag置为1，关闭定时器
         clearInterval(startGetLiveLocation);
         return;
       }
@@ -480,7 +489,12 @@ Page({
             longitude: res.longitude,
           };
 
-          var len = Math.pow(((res.longitude - navPoints[navIndex].longitude) * 111000), 2) + Math.pow(((res.latitude - navPoints[navIndex].latitude) * 111000), 2);
+          _this.data.navigationDot.push({
+            longitude: res.longitude,
+            latitude: res.latitude
+          });//将飞机飞行经过的点存放在navigationDot数组中
+
+          var len = Math.pow(((res.longitude - navPoints[navIndex].longitude) * 111000), 2) + Math.pow(((res.latitude - navPoints[navIndex].latitude) * 111000), 2);//实时飞机的位置到下一个导航点的距离
 
           //距离小于5m时，自动导航到下一个点
           if (len <= 5) {
@@ -490,13 +504,20 @@ Page({
           _this.data.polyline[polylineLength] = {
             points: [_this.data.liveLocation, navPoints[navIndex]],
             color: "#128612",
-            width: 5,
+            width: 2,
             dottedLine: true,
           }
 
+          _this.data.polyline[polylineLengthNav] = {
+            points: _this.data.navigationDot,
+            color: "#898989",
+            width: 10,
+            dottedLine: false,
+          }
           _this.setData({
             polyline: _this.data.polyline,
-            liveLocation: _this.data.liveLocation
+            liveLocation: _this.data.liveLocation,
+            navigationDot: _this.data.navigationDot
           })
         }
       })

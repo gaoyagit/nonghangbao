@@ -194,7 +194,9 @@ Page({
 
         liveLocation:{},//这是什么？导航时，经过的点？
 
-        stopFlag: 0//当stopFlag为1时清空导航的计时器，结束导航
+        stopFlag: 0,//当stopFlag为1时清空导航的计时器，结束导航
+
+        navigationDot: [],//飞机飞行经过的点
     },
     onLoad:function(){
         var _this = this;
@@ -373,7 +375,7 @@ Page({
         this.data.polyline[polylineLength] = {
             points: [this.data.liveLocation,this.data.polyline[result.lineIndex].points[result.linePointsIndex]],
             color: "#128612",
-            width: 5,
+            width: 2,
             dottedLine: true,
         }
 
@@ -426,6 +428,7 @@ Page({
         }
 
         // var startNav = setInterval(getLiveLocation,2000);
+        var polylineLengthNav = this.data.polyline.length;//找到polyline的长度，在polyline[polylineLengthNav]存放飞机作业时经过的点
         var startGetLiveLocation = setInterval(getLiveLocation, 2000);
         var navIndex = 0;
         function getLiveLocation(){
@@ -441,6 +444,11 @@ Page({
                         longitude: res.longitude,
                     };
 
+                    _this.data.navigationDot.push({
+                      longitude: res.longitude,
+                      latitude: res.latitude
+                    });//将飞机飞行经过的点存放在navigationDot数组中
+
                     var len = Math.pow( ((res.longitude - navPoints[navIndex].longitude)*111000),2)+Math.pow( ((res.latitude - navPoints[navIndex].latitude)*111000),2);
 
                     //距离小于5m时，自动导航到下一个点
@@ -451,13 +459,21 @@ Page({
                     _this.data.polyline[polylineLength] = {
                         points: [_this.data.liveLocation,navPoints[navIndex]],
                         color: "#128612",
-                        width: 5,
+                        width: 2,
                         dottedLine: true,
                     }
 
+                  _this.data.polyline[polylineLengthNav] = {
+                    points: _this.data.navigationDot,
+                    color: "#898989",
+                    width: 10,
+                    dottedLine: false,
+                  }
+
                     _this.setData({
                         polyline:_this.data.polyline,
-                        liveLocation:_this.data.liveLocation
+                        liveLocation:_this.data.liveLocation,
+                        navigationDot: _this.data.navigationDot
                     })
                 }
             })

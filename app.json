@@ -1,13 +1,15 @@
 {
   "pages": [
-    
-    
     "pages/_map/map",
-    "pages/login/login",
+    "pages/qsmap/qsmap",
+    
+    "pages/jsmap/map",
     "pages/mode/mode",
+    "pages/login/login",
     "pages/register/register",   
     "pages/index/index",
     "pages/logs/logs"
+    
   ],
   "window": {
     "backgroundTextStyle": "light",
