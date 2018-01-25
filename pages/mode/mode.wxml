@@ -1,9 +1,51 @@
-<!--mode.wxml-->
-<view>
-  <view class="modetext">
-    <text>请选择您的飞行模式</text>
+<!--index.wxml-->
+<!-- open-type="getUserInfo" -->
+<view class="containerBox">
+  <view class="userinfo">
+    <!-- <button wx:if="{{!hasUserInfo && canIUse}}"  bindgetuserinfo="getUserInfo">允许农航宝获得用户信息 </button> //wx:else> -->
+     <block> 
+       <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" background-size="cover"></image> 
+      <text class="userinfo-nickname">欢迎{{userInfo.nickName}}，使用农航宝！</text>
+    </block>
   </view>
-  <button class="modegroup" bindtap="selfbuilt">自建任务</button> 
-  <button class="modegroup" bindtap="receive">接收任务</button> 
-  <button class="modegroup" bindtap="default">缺省模式</button> 
+  <!-- <view class="usermotto">
+    <text class="user-motto">{{motto}}</text>
+  </view> -->
 </view>
+<!--mode.wxml-->
+<view class='contentBox'>
+  <view class="modetext">
+    <text>
+      请
+      选
+      择
+      您
+      的
+      作
+      业
+      模
+      式
+    </text>
+  </view>
+  <view class='modeBox'>
+    <view class='selfBuiltBox'>
+      <button class="modegroup" bindtap="selfbuilt">自建任务</button> 
+    </view>
+    
+    <view class='receiveBox'>
+      <button class="modegroup" bindtap="receive">接收任务</button> 
+    </view>
+
+    <view class='defaultBox'>
+      <button class="modegroup" bindtap="default">缺省模式</button> 
+    </view>
+    
+  </view>
+</view>
+  
+
+<view class='contactUsBox'>
+  联系我们
+</view>
+
+

@@ -16,16 +16,20 @@
         </map>
     </view>
 
-    <view class="operateView" style="width: 100%; display:{{!operateViewDisplay?'none':'block'}};">
+    <view class="operateView" style="width: 100%; font-size:10px; display:{{!operateViewDisplay?'none':'block'}};">
         <button type="default"
-                style="display:{{!operationDisplay?'none':'block'}};"
+                style="display:{{!operationDisplay?'none':'block'}};margin:0px;padding:0px;"
                 bindtap="setOperationArea" size="default"> 点击设置作业区</button>
         <button type="primary"
-                style="width: 50%; float:left;display:{{operationDisplay?'none':'block'}};"
-                bindtap="reSetOperationArea" size="default"> 重新设置作业区</button>
-        <button type="warn"
-                style="width: 50%;float:left;display:{{operationDisplay?'none':'block'}};"
-                bindtap="finishSetOperationArea" size="default"> 结束设置作业区</button>
+                style="width: 20%; float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="reSetOperationArea" size="default"> 重设</button> 
+        <button type="primary"
+                style="width: 40%;float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="setHeadingAngleAndWidth" size="default">航向角幅宽</button>
+         <button type="warn"
+                style="width: 40%; float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="nextAndFinishSetOperationArea" size="default">下一个结束</button> 
+        
     </view>
 
     <view class="setOperateWidthView" style="width: 100%; display:{{!setOperateWidthViewDisplay?'none':'block'}};">

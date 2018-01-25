@@ -177,8 +177,10 @@ Page({
         longitude:'',
         mapHeight:'',
         scale:'14',
+        polylineAllLength:0,//全局polyline长度
         operationDisplay:1,//控制是否显示设置作业区的按钮的选项
-        operationArray:[],//生成作业区的各个坐标点的数组
+        allOperationArray: [],//所有作业区域的坐标点，例如allOperationArray[0]存放第一个作业区，allOperationArray[1]存放第二个作业区
+        operationArray:[],//生成单个作业区的各个坐标点的数组
         operateWidth:0,//幅宽，也就是作业宽度
 
         mapViewDisplay:1,//地图view
@@ -244,9 +246,12 @@ Page({
             }
         })
     },
+    // ***********************************************作业区域设置*************************************************
     //生成作业区的点，形成作业区域
     controltap:function(e) {
         var _this = this;
+        // var polylineLen;//存放polyline的长度
+        // polylineLen = _this.data.polyline.length;//点击一次长度会加1
         if (e.controlId === 1) {//红色的定位
             this.data.operationDisplay?'':
                 this.mapCtx.getCenterLocation({
@@ -270,7 +275,10 @@ Page({
                                 latitude: res.latitude
                             })
                         }
-                        _this.data.polyline[0] = {
+                        
+                        // console.log(polylineLen);
+                        console.log("作业区域" + _this.data.polylineAllLength);
+                        _this.data.polyline[_this.data.polylineAllLength] = {
                             points: _this.data.operationArray,
                             color: "#FF0000DD",
                             width: 2,
@@ -280,7 +288,9 @@ Page({
                             operationArray: _this.data.operationArray,
                             polyline: _this.data.polyline
                         })
+                        console.log("设置作业区域之后polyline的长度" + _this.data.polyline.length);
                     }
+                    
                 })
 
         } else if (e.controlId === 2) {
@@ -304,6 +314,7 @@ Page({
         //     }
         // })
     },
+    // *****************************************需要重写**************************************************
     reSetOperationArea:function(){
         this.data.operationArray = [];
         this.data.polyline[0] = {
@@ -318,7 +329,7 @@ Page({
             polyline: this.data.polyline
         })
     },
-    finishSetOperationArea:function(){
+    setHeadingAngleAndWidth:function(){
         this.setData({
             mapViewDisplay:0,
             operateViewDisplay:0,
@@ -340,13 +351,18 @@ Page({
         })
     },
     finishSetOperateWidthView:function(){
-        this.setData({
+        var _this = this;
+        _this.setData({
             mapViewDisplay:1,
-            operateViewDisplay:0,
+            operateViewDisplay:1,
             setOperateWidthViewDisplay:0,
-            navViewDisplay:1,
+            navViewDisplay:0,
         })
-        this.generateNavLine();
+        _this.generateNavLine();
+        _this.data.polylineAllLength = _this.data.polyline.length;
+        
+         console.log("生成航下后的长度"+_this.data.polylineAllLength);
+         
     },
 
 
@@ -363,7 +379,72 @@ Page({
             })
         },1000);
     },
-    
+// ************************************************设置下一个作业区域**************************************************************
+    nextAndFinishSetOperationArea:function(){
+      var self = this;
+      var polylineLength;
+      var allOperationArrayLength ;//self.data.allOperationArray.length;
+      self.data.allOperationArray.push(self.data.operationArray);
+      wx.showModal({
+        title: '提示',
+        content: '是否设置下一个作业区域',
+        success: function (res) {
+          if (res.confirm) {
+            
+            console.log('设置下一个作业区')//设置下一个作业区域
+            self.setData({
+              mapViewDisplay: 1,
+              operateViewDisplay: 1,
+              setOperateWidthViewDisplay: 0,
+              navViewDisplay: 0,
+              
+            })
+            // console.log(self.data.allOperationArray);
+            allOperationArrayLength = self.data.allOperationArray.length;
+            console.log("作业区总个数"+allOperationArrayLength);
+            polylineLength = self.data.polyline.length;
+            // console.log(polylineLength);
+            // for(var i = 0 ;i<allOperationArrayLength;i++){
+            //   self.data.polyline[polylineLength] = {
+            //     points: self.data.allOperationArray[i],
+            //     color: "#FF0000DD",
+            //     width: 2,
+            //     dottedLine: true
+            //   }
+            // }
+            
+            self.data.operationArray = [];
+            self.setData({
+              // operationArray: _this.data.operationArray,
+              operationArray: self.data.operationArray,
+              allOperationArray: self.data.allOperationArray,
+              polyline: self.data.polyline
+            })
+            console.log("当前作业区域的里面的节点个数" + self.data.operationArray.length);
+          } else if (res.cancel) {
+            wx.showModal({
+              title: '提示',
+              content: '是否结束设置作业区域',
+              success: function (res) {
+                if (res.confirm) {
+                  console.log('导航')//回到开始导航的页面
+                  self.setData({
+                    mapViewDisplay: 1,
+                    operateViewDisplay: 0,
+                    setOperateWidthViewDisplay: 0,
+                    navViewDisplay: 1,
+                  })
+                } else if (res.cancel) {
+                  console.log('回到作业区页面')//如果用户点击取消，回到设置作业区域的页面
+                }
+              }
+            })
+          }
+        }
+      })
+    },
+
+    // *********************************************************导航***********************************************************************   
     //开始导航
     startNavigation:function(){
         this.data.liveLocation = this.data.startPosition;
@@ -523,12 +604,13 @@ Page({
         }
 
     },
-    //生成航线
+    //**************************************************生成航线****************************************
     generateNavLine:function() {
+        // var _this = this;
+        console.log("生成航线模块" + this.data.polylineAllLength);
         var weiduMinPoint, jingduMinPoint;
         var headingAngle = this.data.headingAngle < 0 ? this.data.headingAngle+180 : this.data.headingAngle;
         var copyOperationArray = JSON.parse(JSON.stringify(this.data.operationArray));
-
         weiduMinPoint = copyOperationArray[0];
         jingduMinPoint = copyOperationArray[0];
 
@@ -543,8 +625,7 @@ Page({
             }
         }
 
-        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, headingAngle, weiduMinPoint.latitude,this.data.polyline[0].points);
-
+        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, headingAngle, weiduMinPoint.latitude,this.data.polyline[this.data.polylineAllLength].points);
         //第一次根据基准点求偏移点，偏移量是幅宽的一半
         var basePointOffset = this.ComputeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , headingAngle + 90);
 
@@ -585,9 +666,12 @@ Page({
                 }
             }
         }
-
-        for (var j = 0; j < this.data.crossPoints.length; j++) {
-
+        // var j = this.data.polylineAllLength;
+        
+        console.log(this.data.polylineAllLength);
+        // ****************为什么可以对polyline赋值，并没有影响前面polyline数组里面的值*****************
+        for (var j = 0; j < (this.data.crossPoints.length); j++) {
+            console.log("循环内的polyline长度"+this.data.polyline.length);
             this.data.polyline[j + 1] = {
                 points: this.data.crossPoints[j],
                 color: "#128612",
@@ -597,7 +681,8 @@ Page({
         }
         console.log(this.data.polyline);
         this.setData({
-            polyline: this.data.polyline
+            polyline: this.data.polyline,
+            operationArray:this.data.operationArray
         })
 
     },

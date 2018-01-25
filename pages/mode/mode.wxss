@@ -1,2 +1,66 @@
-.modegroup{margin:50rpx 35rpx;background-color:#48c23d;}
-.modetext{margin-top:20rpx;font-size: 20px;text-align: center;border: 1px solid gray;margin-left: 100rpx;margin-right: 100rpx;}
+/**index.wxss**/
+.containerBox{
+  background-color: gray;
+  height: 25vh; 
+}
+.userinfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* background-color: gray; */
+}
+
+.userinfo-avatar {
+  width: 128rpx;
+  height: 128rpx;
+  margin: 20rpx;
+  border-radius: 50%;
+}
+
+.userinfo-nickname {
+  color: #aaa;
+}
+
+.usermotto {
+  margin-top: 200px;
+}
+
+.contentBox{
+  overflow: hidden;
+  height: 60vh; 
+  
+}
+
+.modetext{
+  padding-top: 20px;
+  font-size: 16px;
+  float: left;
+  width: 30vw;
+  text-align: center;
+  background-color: green;
+  padding-bottom: 20px;
+  color: white;
+  /* height: 50vh; */
+  height: 100vh;
+}
+.modeBox{
+  float: left;
+  width: 70vw;
+}
+.selfBuiltBox,.receiveBox,.defaultBox{
+  height: 20vh;
+  background-color: goldenrod;
+  padding-bottom: 2px; 
+  line-height: 20vh;
+}
+
+.modegroup{
+  width: 70vw;
+  height: 16vh;
+  text-align: center;
+  line-height: 16vh;
+}
+.contactUsBox{
+  height: 15vh;
+  background-color: gainsboro;
+}
