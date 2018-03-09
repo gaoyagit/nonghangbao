@@ -2,8 +2,8 @@
   "pages": [
     "pages/_map/map",
     "pages/mode/mode",
-    "pages/qsmap/qsmap",
-    "pages/jsmap/map",
+    "pages/defaultMap/map",
+    "pages/receiveMap/map",
     
     "pages/register/register",
     "pages/login/login",

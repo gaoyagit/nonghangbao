@@ -41,11 +41,14 @@
 <!-- display:{{!navButtonDisplay?'none':'block'} -->
     <view class="navView" style="width: 100%; display:{{!navViewDisplay?'none':'block'}};">
             <button type="primary"
-                    style="width: 50%;float:left; };"
+                    style="width: 20%;float:left; };"
+                    bindtap="AirToNavlineDistance" size="default">测试</button>
+            <button type="primary"
+                    style="width: 40%;float:left; };"
                     bindtap="startNavigation" size="default">开始导航</button>
                     <!-- display:{{navButtonDisplay?'none':'block'} -->
             <button type="warn"
-                    style="width: 50%;float:left; };"
+                    style="width: 40%;float:left; };"
                     bindtap="finishNavigation" size="default">结束导航</button>
     </view>
 </view>
