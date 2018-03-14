@@ -22,13 +22,16 @@
                 bindtap="setOperationArea" size="default"> 点击设置作业区</button>
         <button type="primary"
                 style="width: 20%; float:left;display:{{operationDisplay?'none':'block'}};"
-                bindtap="reSetOperationArea" size="default"> 重设</button> 
+                bindtap="reSetOperationArea" size="default"
+                disabled = "{{!resetDisabled ? true:false}}"> 重设</button> 
         <button type="primary"
                 style="width: 40%;float:left;display:{{operationDisplay?'none':'block'}};"
-                bindtap="setHeadingAngleAndWidth" size="default">航向角幅宽</button>
+                bindtap="setHeadingAngleAndWidth" size="default" 
+                disabled="{{!dataDisabled ? true:false}}">航向角幅宽</button>
          <button type="warn"
                 style="width: 40%; float:left;display:{{operationDisplay?'none':'block'}};"
-                bindtap="nextAndFinishSetOperationArea" size="default">下一个结束</button> 
+                bindtap="nextAndFinishSetOperationArea" size="default" 
+                disabled="{{!nextDisabled ? true:false}}">设置下一个</button> 
         
     </view>
 
