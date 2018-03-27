@@ -1,7 +1,52 @@
-<!-- map.wxml -->
-<map id="myMap" show-location />
+<view class="foot" style="width: 100%;">
 
-<button type="primary" bindtap="getCenterLocation">获取位置</button>
-<button type="primary" bindtap="moveToLocation">移动位置</button>
-<button type="primary" bindtap="translateMarker">移动标注</button>
-<button type="primary" bindtap="includePoints">缩放视野展示所有经纬度</button>
+    <view class="mapView" style="width: 100%; display:{{!mapViewDisplay?'none':'block'}};">
+        <map
+                id="map"
+                longitude="{{longitude}}"
+                latitude="{{latitude}}"
+                scale="{{scale}}"
+                controls="{{controls}}"
+                bindcontroltap="controltap"
+                markers="{{markers}}"
+                bindmarkertap="markertap"
+                polyline="{{polyline}}"
+                show-location
+                style="width: 100%; height:{{mapHeight}}px;">
+        </map>
+    </view>
+
+    <!-- <view class="operateView" style="width: 100%; display:{{!operateViewDisplay?'none':'block'}};">
+        <button type="default"
+                style="display:{{!operationDisplay?'none':'block'}};"
+                bindtap="setOperationArea" size="default"> 点击设置作业区</button>
+        <button type="primary"
+                style="width: 50%; float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="reSetOperationArea" size="default"> 重新设置作业区</button>
+        <button type="warn"
+                style="width: 50%;float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="finishSetOperationArea" size="default"> 结束设置作业区</button>
+    </view> -->
+
+     <view class="setOperateWidthView" style="width: 100%; display:{{!setOperateWidthViewDisplay?'none':'block'}};">
+          <!-- <label>设置幅宽和航向角</label>
+          <input type="number" bindinput="setOperateWidth" placeholder="请在这里输入幅宽"></input>
+          <input type="number" bindinput="setHeadingAngle" placeholder="请在这里输入航向角"></input> -->
+          <!-- <button type="default" style="width: 70%;" bindtap="finishSetOperateWidthView" size="default">确定</button> -->
+     </view>     
+ <!-- display:{{!navButtonDisplay?'none':'block'}  -->
+    <view class="navView" style="width: 100%; }};">
+
+            <button type="primary"
+                    style="width: 30%;float:left; };"
+                    bindtap="startNavigation" size="default">开始</button>
+                    <!-- display:{{navButtonDisplay?'none':'block'} -->
+            <button type="primary"
+                    style="width: 40%;float:left; };"
+                    bindtap="pauseNavigation" size="default">暂停</button>          
+            <button type="warn"
+                    style="width: 30%;float:left; };"
+                    bindtap="finishNavigation" size="default">结束</button>
+    </view>
+</view>
+

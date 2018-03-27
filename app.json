@@ -1,9 +1,17 @@
 {
   "pages": [
+    "pages/receiveMap/map",
+    "pages/test/test",
+    
+   
     "pages/_map/map",
+    
+    
+    
+    
+    
     "pages/mode/mode",
     "pages/defaultMap/map",
-    "pages/receiveMap/map",
     
     "pages/register/register",
     "pages/login/login",
