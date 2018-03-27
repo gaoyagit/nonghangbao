@@ -408,7 +408,7 @@ function lineCrossTest(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2, vHeading) {
     bDot,//B点的坐标
     cDot,//C点的坐标
     oDot,//存放o点的坐标
-    tuple = [] //存放射线与线段之间的交点的数组
+    tuple = []; //存放射线与线段之间的交点的数组
 
   aDot = {
     latitude: vLat1,
@@ -449,9 +449,10 @@ function lineCrossTest(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2, vHeading) {
 
   //判断o点是否在AB上
   // console.log("o点是否在AB上:" + ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude));
-  if (ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude) > 10) {
+  var testangle = ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude)
+  if (ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude) > 178) {
     tuple.push({
-      laitide:oDot.latitude,
+      latitude:oDot.latitude,
       longitude:oDot.longitude
     })
   }else{
@@ -972,7 +973,7 @@ Page({
     var copyOperationArray = this.data.operationArray;
     weiduMinPoint = copyOperationArray[0];
     jingduMinPoint = copyOperationArray[0];
-console.log("1111111111111111111111111111");
+
     var length = copyOperationArray.length - 1;
 
     for (var i = 0; i < length; i++) {
@@ -983,16 +984,16 @@ console.log("1111111111111111111111111111");
         jingduMinPoint = copyOperationArray[i]
       }
     }
-console.log("2222222222222222222222222222222222222")
+
     var basePoint = basePointFunction(jingduMinPoint.latitude, jingduMinPoint.longitude, headingAngle, weiduMinPoint.latitude, this.data.polyline[this.data.polyline.length - 1].points);
     //第一次根据基准点求偏移点，偏移量是幅宽的一半
     var basePointOffset = computeOffset(basePoint.latitude, basePoint.longitude, 100 / 2,  headingAngle+90);
-console.log("333333333333333333333333333333333333333")
+
     //放置的根据每一个偏移点和作业区的交点的集合。如果为空，就说明根据该偏移点，没有航线生成，求航线的逻辑可以结束。
     var crossPoints = [];
 
     var tempCrossPointArray = [];
-console.log("444444444444444444444444444444444444444444")
+
     for (var i = 0; i < length; i++) {
       //从偏移点出发的射线和作业区的交点
       tempCrossPointArray = lineCrossTest(basePointOffset.latitude, basePointOffset.longitude, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude,headingAngle)
@@ -1003,7 +1004,7 @@ console.log("444444444444444444444444444444444444444444")
         })
       }
     }
-console.log("5555555555555555555555555555555")
+
     while (crossPoints.length > 0) {
       // slice() 方法可从已有的数组中返回选定的元素。
       this.data.crossPoints.push(crossPoints.slice(0));
@@ -1016,7 +1017,7 @@ console.log("5555555555555555555555555555555")
 
       for (var i = 0; i < length; i++) {
         //从偏移点出发的射线和作业区的交点
-        tempCrossPointArray = lineCrossTest(basePointOffset.latitude, basePointOffset.longitude, headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
+        tempCrossPointArray = lineCrossTest(basePointOffset.latitude, basePointOffset.longitude, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude, headingAngle)
         if (tempCrossPointArray.length > 0) {
           crossPoints.push({
             longitude: tempCrossPointArray[0].longitude,
