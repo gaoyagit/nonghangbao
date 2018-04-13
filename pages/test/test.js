@@ -445,11 +445,11 @@ function lineCrossTest(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2, vHeading){
   a2cDistance = getbDistance(b2cDistance, Angle2Arc(bAngle), Angle2Arc(cAngle));
 
   //找o点的位置
-  oDot = computeOffset(cDot.latitude, cDot.longitude, a2cDistance * vRadius, 20);
+  oDot = computeOffset(cDot.latitude, cDot.longitude, a2cDistance * vRadius, vHeading);
 
   //判断o点是否在AB上
-  // console.log("o点是否在AB上:" + ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude));
-  if (ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude) > 10){
+  console.log("o点是否在AB上:" + ComputeAngle(aDot.latitude, aDot.longitude, aDot.latitude, aDot.longitude, bDot.latitude, bDot.longitude));
+  if (ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude) > 170){
     return oDot;
   }else{
     return null;
@@ -533,6 +533,8 @@ Page({
     var bDot;//B点的坐标
     var cDot;//C点的坐标
     var oDot;//o点的坐标
+    var kdot;
+    var jdot;
 
     for (var i = 0; i < _this.data.testArea.length; i++) {
       for (var j = 0; j < _this.data.testArea[i].length; j++) {
@@ -563,7 +565,7 @@ Page({
       }
     }
 
-    oDot = lineCrossTest(cDot.latitude, cDot.longitude, aDot.latitude, aDot.longitude, bDot.latitude, bDot.longitude, 20);
+    oDot = lineCrossTest(cDot.latitude, cDot.longitude, aDot.latitude, aDot.longitude, bDot.latitude, bDot.longitude, 95);
     if(oDot != null){
       _this.data.polyline[_this.data.polyline.length] = {
         points: [cDot,oDot],
@@ -573,7 +575,22 @@ Page({
     }
 
     }
+
+    kdot = computeOffset(aDot.latitude, aDot.longitude, 100, 0);
+    _this.data.polyline[_this.data.polyline.length] = {
+      points: [aDot, kdot],
+      color: "#199991",
+      width: 2,
+      dottedLine: false
+    }
     
+    jdot = computeOffset(aDot.latitude, aDot.longitude, -100, 0);
+    _this.data.polyline[_this.data.polyline.length] = {
+      points: [aDot, jdot],
+      color: "#999991",
+      width: 2,
+      dottedLine: false
+    }
     // //已知c点，和航向角=20，找经过c点这条线上的，距离c点100米的一个点
     // temporaryDot = computeOffset(cDot.latitude, cDot.longitude, 100, 20);
 

@@ -57,7 +57,7 @@ function IsApproximateZero(vNum) {
 // 获取射线与线段的交点
 //vLat0:射线端点纬度 vLon0:射线端点经度 vHeading:射线航向角
 //vLat1:线段端点1纬度 vLon1:线段端点1经度 vLat2:线段端点2纬度 vLon2:线段端点2经度
-function LineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2) {
+function lineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2) {
     //Tuple < double, double > rTuple = null;
     var pKAngle = Heading2KAndgle(vHeading);//航向角
     var tuple = [] //存放射线与线段之间的交点的数组
@@ -142,6 +142,114 @@ function LineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2) {
     }
     return tuple;
 }
+
+//在球面空间坐标系下获取射线与线段的交点
+//vLat0:射线端点纬度 vLon0:射线端点经度 vHeading:射线航向角
+//vLat1:线段端点1纬度 vLon1:线段端点1经度 vLat2:线段端点2纬度 vLon2:线段端点2经度
+//LineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2) {
+function lineCrossTest(vLat0, vLon0, vHeading,vLat1, vLon1, vLat2, vLon2,) {
+  var temporaryDot,//已知c点，和航向角，找经过c点这条线上的，距离c点100米的一个点
+    b2cDistance,//BC的长
+    a2cDistance,//AC的长
+    bAngle,//角B
+    cAngle,//角C
+    aDot,//A点的坐标
+    bDot,//B点的坐标
+    cDot,//C点的坐标
+    oDot,//存放o点的坐标
+    tuple = []; //存放射线与线段之间的交点的数组
+
+  aDot = {
+    latitude: vLat1,
+    longitude: vLon1
+  }
+  // console.log("aDot" + aDot.latitude + "   " + aDot.longitude);
+
+  bDot = {
+    latitude: vLat2,
+    longitude: vLon2
+  }
+  // console.log("bDot" + bDot.latitude + "   " + bDot.longitude);
+
+  cDot = {
+    latitude: vLat0,
+    longitude: vLon0
+  }
+  // console.log("cDot" + cDot.latitude + "   " + cDot.longitude);
+
+
+  //已知c点，和航向角=20，找经过c点这条线上的，距离c点100米的一个点
+  temporaryDot = computeOffset(cDot.latitude, cDot.longitude, 100, vHeading);
+
+  //找a的长
+  b2cDistance = ComputeSpacialDistance(bDot.latitude, bDot.longitude, cDot.latitude, cDot.longitude, vRadius) / vRadius
+
+  //找角B
+  bAngle = ComputeAngle(aDot.latitude, aDot.longitude, bDot.latitude, bDot.longitude, cDot.latitude, cDot.longitude)
+
+  //找角C
+  cAngle = ComputeAngle(bDot.latitude, bDot.longitude, cDot.latitude, cDot.longitude, temporaryDot.latitude, temporaryDot.longitude)
+
+  //找b的长度
+  a2cDistance = getbDistance(b2cDistance, Angle2Arc(bAngle), Angle2Arc(cAngle));
+
+  //找o点的位置
+  oDot = computeOffset(cDot.latitude, cDot.longitude, a2cDistance * vRadius, vHeading);
+
+  //判断o点是否在AB上
+  // console.log("o点是否在AB上:" + ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude));
+  var testangle = ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude)
+  if (ComputeAngle(aDot.latitude, aDot.longitude, oDot.latitude, oDot.longitude, bDot.latitude, bDot.longitude) > 170) {
+    tuple.push({
+      latitude: oDot.latitude,
+      longitude: oDot.longitude
+    })
+  } else {
+    tuple = [];
+  }
+
+  return tuple;
+
+}
+
+//a是边长，B是角B，C是角C,找边长b的长度
+function getbDistance(a, B, C) {
+  var numerator,//分子
+    denominator;//分母
+
+  numerator = Math.sin(a) * Math.sin(B) * Math.sin(C);
+  denominator = Math.cos(B) + Math.cos(C) * (Math.sin(B) * Math.sin(C) * Math.cos(a) - Math.cos(B) * Math.cos(C));
+
+  var bDistance = Math.abs(Math.atan(numerator / denominator));
+
+  return bDistance;
+}
+
+//已知一个点、距离、航向角，求终点
+function computeOffset(vLat, vLon, vDistance, vHeading) {
+  var pDistanceArc = vDistance / vRadius;
+  var pHArc = Angle2Arc(vHeading);
+  var pLatArc = Angle2Arc(vLat);
+  var pDAC = Math.cos(pDistanceArc);
+  var pDAS = Math.sin(pDistanceArc);
+  var pLAS = Math.sin(pLatArc);
+  var pLAC = Math.cos(pLatArc);
+  var rLatS = pDAC * pLAS + pDAS * pLAC * Math.cos(pHArc);
+  return {
+    latitude: Arc2Angle(Math.asin(rLatS)),
+    longitude: Arc2Angle(Angle2Arc(vLon) + Math.atan2(pDAS * pLAC * Math.sin(pHArc), pDAC - pLAS * rLatS))
+  }
+}
+
+/// 计算出角123的大小（小于180度）,已知3个点，求三个点的夹角       
+function ComputeAngle(vLat1, vLon1, vLat2, vLon2, vLat3, vLon3) {
+  var rDouble = Math.abs(GetAzimuth(vLat2, vLon2, vLat1, vLon1) - GetAzimuth(vLat2, vLon2, vLat3, vLon3));
+  if (rDouble > 180) {
+    rDouble = 360 - rDouble;
+  }
+  return rDouble;
+}
+
 
 //求1到2的方位角(圆心在1上，角度制)
 function GetAzimuth(vLat1, vLon1, vLat2, vLon2) {
@@ -294,6 +402,197 @@ function checkArr(arr1, arr2) {
 
 }
 
+//找到中间点的基点，即第一个点的函数,求航线和作业区交点的第一个点，（这个点根据已知直线和点以及点在直线的角度，求交点得出的）
+function basePointFunction(vLat0, vLon0, vHeading, vLat1, allPoints) {
+  // A0*X + Bo*Y + C0 = 0
+  //longitude--->X,latitude--->Y
+  var minLongitudeDot = allPoints[0], //最小经度点
+    minLatitudeDot = allPoints[0], //最小维度点
+    maxLongitudeDot = allPoints[0],
+    maxLatitudeDot = allPoints[0];
+
+  for (var i = 0; i < allPoints.length; i++) {
+    if (minLongitudeDot.longitude > allPoints[i].longitude) {
+      minLongitudeDot = allPoints[i];
+    }
+
+    if (minLatitudeDot.latitude > allPoints[i].latitude) {
+      minLatitudeDot = allPoints[i];
+    }
+
+    if (maxLongitudeDot.longitude < allPoints[i].longitude) {
+      maxLongitudeDot = allPoints[i];
+    }
+
+    if (maxLatitudeDot.latitude < allPoints[i].latitude) {
+      maxLatitudeDot = allPoints[i];
+    }
+  }
+  var pKAngle = Heading2KAndgle(vHeading);
+  var A0 = Math.tan(pKAngle * Math.PI / 180);//斜率
+  var B0 = -1;
+  var C0 = minLongitudeDot.latitude - Math.tan(pKAngle * Math.PI / 180) * minLongitudeDot.longitude;
+
+  //求出距离 经过最小经度点的直线的左边最远的点
+  var result = 0, resultKey = 0, flag = false;
+
+  for (var i = 0; i < allPoints.length - 1; i++) {
+    if (A0 * allPoints[i].longitude + B0 * allPoints[i].latitude + C0 < result) {
+      resultKey = i;
+      result = A0 * allPoints[i].longitude + B0 * allPoints[i].latitude + C0;
+      flag = true;
+    }
+  }
+  //如果有点在直线的左边，那就重新设置C0
+  if (flag) {
+    C0 = allPoints[resultKey].latitude - Math.tan(pKAngle * Math.PI / 180) * allPoints[resultKey].longitude;
+  }
+  if (vHeading == 0) {//最小经度和最小维度
+    return {
+      longitude: minLongitudeDot.longitude,
+      //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+      latitude: minLatitudeDot.latitude
+    };
+  } else if (vHeading > 0 && vHeading < 90) {
+    return {
+      longitude: -(C0 + B0 * minLatitudeDot.latitude) / A0,
+      //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+      latitude: minLatitudeDot.latitude
+    };
+  } else if (vHeading == 90) {//最小x和最大y
+    return {
+      longitude: minLongitudeDot.longitude,
+      //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+      latitude: maxLatitudeDot.latitude
+    };
+  } else {
+    return {
+      longitude: minLongitudeDot.longitude,
+      //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+      latitude: -(A0 * minLongitudeDot.longitude + C0) / B0
+    };
+  }
+
+}
+
+/// WGS84经纬度坐标转Web墨卡托米制坐标       
+function latLon2Meter(vLatLonCoor) {
+  var rCoor = [];//米制坐标
+  if (vLatLonCoor.longitude > 180)
+    vLatLonCoor.longitude = 180;
+  else if (vLatLonCoor.longitude < -180)
+    vLatLonCoor.longitude = -180;
+  rCoor.X = vLatLonCoor.longitude * vRadius * Math.PI / 180.0;
+  if (vLatLonCoor.latitude > 180)
+    vLatLonCoor.latitude = 180;
+  else if (vLatLonCoor.latitude < -180)
+    vLatLonCoor.latitude = 180;
+  rCoor.Y = Math.log(Math.tan((90 + vLatLonCoor.latitude) * Math.PI / 360.0)) / (Math.PI / 180.0) * Math.PI * vRadius / 180.0;
+  return rCoor;
+}
+
+/// Web墨卡托米制坐标转WGS84经纬度坐标       
+function meter2LatLon(vMeterCoor) {
+  var rCoor;//经纬度坐标
+  var tempLongitude;
+  var tempLatitude;
+
+  tempLongitude = vMeterCoor.X / (Math.PI * vRadius) * 180;
+  tempLatitude = vMeterCoor.Y / (Math.PI * vRadius) * 180;
+  tempLatitude = 180.0 / Math.PI * (2 * Math.atan(Math.exp(tempLatitude * Math.PI / 180.0)) - Math.PI / 2.0);
+
+  rCoor = {
+    latitude: tempLatitude,
+    longitude: tempLongitude
+  }
+
+  return rCoor;
+
+}
+
+
+//找到中间点的基点，即第一个点的函数,求航线和作业区交点的第一个点，（这个点根据已知直线和点以及点在直线的角度，求交点得出的）
+function basePointFunctionTest(vLat0, vLon0, vHeading, vLat1, allPoints) {
+  // A0*X + Bo*Y + C0 = 0
+  //longitude--->X,latitude--->Y
+  var rCoorArray = [];
+  var resultDotCoor ;//XY
+  var resultDotLonLat;//经纬度
+  for(var i = 0 ;i < allPoints.length;i++){
+    rCoorArray.push(latLon2Meter(allPoints[i]));
+  }
+  var minXDot = rCoorArray[0], //最小X点
+    minYDot = rCoorArray[0], //最小Y点
+    maxXDot = rCoorArray[0],//最大X点
+    maxYDot = rCoorArray[0];//最大Y点
+
+  for (var i = 0; i < rCoorArray.length; i++) {
+    if (minXDot.X > rCoorArray[i].X) {
+      minXDot = rCoorArray[i];
+    }
+
+    if (minYDot.Y > rCoorArray[i].Y) {
+      minYDot = rCoorArray[i];
+    }
+
+    if (maxXDot.X < rCoorArray[i].X) {
+      maxXDot = rCoorArray[i];
+    }
+
+    if (maxYDot.Y < rCoorArray[i].Y) {
+      maxYDot = rCoorArray[i];
+    }
+  }
+  var pKAngle = Heading2KAndgle(vHeading);
+  var A0 = Math.tan(pKAngle * Math.PI / 180);//斜率
+  var B0 = -1;
+  var C0 = minXDot.Y - Math.tan(pKAngle * Math.PI / 180) * minXDot.X;
+
+  //求出距离 经过最小经度点的直线的左边最远的点
+  var result = 0, resultKey = 0, flag = false;
+
+  for (var i = 0; i < rCoorArray.length - 1; i++) {
+    if (A0 * rCoorArray[i].X + B0 * rCoorArray[i].Y + C0 < result) {
+      resultKey = i;
+      result = A0 * rCoorArray[i].X + B0 * rCoorArray[i].Y + C0;
+      flag = true;
+    }
+  }
+  //如果有点在直线的左边，那就重新设置C0
+  if (flag) {
+    C0 = rCoorArray[resultKey].Y - Math.tan(pKAngle * Math.PI / 180) * rCoorArray[resultKey].X;
+  }
+  if (vHeading == 0) {//最小经度和最小维度
+    resultDotCoor = {
+      X: minXDot.X,
+      //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+      Y: minYDot.Y
+    };
+  } else if (vHeading > 0 && vHeading < 90) {
+    resultDotCoor = {
+      X: -(C0 + B0 * minXDot.X) / A0,
+      //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+      Y: minYDot.Y
+    };
+  } else if (vHeading == 90) {//最小x和最大y
+    resultDotCoor = {
+      X: minXDot.X,
+      //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+      Y: maxYDot.Y
+    };
+  } else {
+    resultDotCoor = {
+      X: minXDot.X,
+      //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
+      Y: -(A0 * minXDot.X + C0) / B0
+    };
+  }
+
+
+  resultDotLonLat = meter2LatLon(resultDotCoor);
+
+  return resultDotLonLat;
+}
 
 //判断作业区域的所有flag，未作业的flag = 0；作业过的flag = 1，若有未作业过的区域，返回true，全部作业返回,false，aircraftToNavIndexInPolyline由于allOperationAreaInPolyline是polyline数组的再现，包括飞机作业时的航点，在polyline【polyline.length】>2,所以传进来aircraftToNavIndexInPolyline作为找作业区域的终止长度
 function getJudgmentAreaFlag(allOperationAreaInPolyline, aircraftToNavIndexInPolyline){
@@ -306,6 +605,188 @@ function getJudgmentAreaFlag(allOperationAreaInPolyline, aircraftToNavIndexInPol
     }
   } 
   return false;
+}
+
+//在球面坐标系下，找基点的应用函数
+//ComputeSpacialDistance(vLat1, vLon1, vLat2,vLon2, vRadius)球面之间两点的距离
+//获得当前作业区域的最长距离
+function getLongestDistance(operationArea){
+  var longestDistance;
+  var distanceAarry = [];
+  for(var i = 0 ;i <operationArea.length-1;i++){
+    for (var j = 0; j < operationArea.length-1; j++) {
+      distanceAarry.push(ComputeSpacialDistance(operationArea[i].latitude, operationArea[i].longitude, operationArea[j].latitude, operationArea[j].longitude, vRadius));
+    }
+  }
+
+  distanceAarry = distanceAarry.sort(function(v0,v1){
+    return v1-v0;
+  });
+
+  longestDistance = distanceAarry[0];
+
+  return longestDistance;
+}
+//找边缘切点
+function getEdgeCutPoint(operationArea, vHeading){
+  var cutPoint = [];//存放边缘切点,会有两个切点
+  var longestDistance;//最长边的长度
+  var aPoint, bPoint, cPoint, oPoint, angleAoB, angleAoC, angleBoC;
+  var flag = 0;
+
+  longestDistance = getLongestDistance(operationArea);
+  
+
+  for (var i = 0; i < operationArea.length - 1; i++) {
+    aPoint = operationArea[i];
+    oPoint = computeOffset(aPoint.latitude, aPoint.longitude, longestDistance, vHeading);
+
+    for (var j = 0; j < operationArea.length - 2; j++) {
+      if (i == j) {
+        continue;
+      } else if (i == j + 1 && j + 1 != operationArea.length - 2) {
+        // console.log("j0:" + j + "   " + "j1:" + (j + 2));
+        bPoint = operationArea[j];
+        cPoint = operationArea[j + 2];
+        
+      } else if (i == j + 1 && j + 1 == operationArea.length - 2) {
+        continue;
+      } else {
+        // console.log("j0:" + j + "   " + "j1:" + (j + 1));
+        bPoint = operationArea[j];
+        cPoint = operationArea[j + 1];
+      }
+
+      // ComputeAngle(vLat1, vLon1, vLat2, vLon2, vLat3, vLon3)求夹角
+      angleAoB = ComputeAngle(aPoint.latitude, aPoint.longitude, oPoint.latitude, oPoint.longitude, bPoint.latitude, bPoint.longitude);
+      angleAoC = ComputeAngle(aPoint.latitude, aPoint.longitude, oPoint.latitude, oPoint.longitude, cPoint.latitude, cPoint.longitude);
+      angleBoC = ComputeAngle(bPoint.latitude, bPoint.longitude, oPoint.latitude, oPoint.longitude, cPoint.latitude, cPoint.longitude);
+
+      if(angleBoC > Math.max(angleAoB,angleAoC)){
+        flag = 1;
+        break;
+      }
+    }
+
+    if(flag == 0){
+      cutPoint.push(aPoint);
+    }else{
+      flag =0;
+    }
+    
+  }
+
+return cutPoint;
+
+}
+
+///找到切线线段的两个端点
+///basePoint是作业区域的切点
+function lineStartEndPoint(basePoint, longestDistance, vHeading){
+  var twoLinePoint = [];
+  twoLinePoint.push(ComputeOffset(vLat0, vLon0, longestDistance, vHeading));
+  twoLinePoint.push(ComputeOffset(vLat0, vLon0, -longestDistance, vHeading));
+ 
+  return twoLinePoint;
+}
+
+
+/// 球面获取射线与线段的交点
+/// 连接01,另角0为角A，角1为角C，射线与线段交点所在角为角C，01为b，求交点与A之间的弧长c，则有
+/// Ctgc*Sinb=Cosb*CosA + SinA*CtgC
+/// <param name="vLat0">射线端点纬度</param>
+/// <param name="vLon0">射线端点经度</param>
+/// <param name="vHeading">射线航向角</param>
+/// <param name="vLat1">线段端点1纬度</param>
+/// <param name="vLon1">线段端点1经度</param>
+/// <param name="vLat2">线段端点2纬度</param>
+/// <param name="vLon2">线段端点2经度</param>
+function raysLineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2)
+{
+  var pAAngle = ComputeAngle(vLat0, vLon0, vHeading, vLat1, vLon1);
+  var pOtherAAngle = ComputeAngle(vLat0, vLon0, vHeading, vLat2, vLon2);
+  var tuple; //存放射线与线段之间的交点的数组
+  //如果在端点处重合
+  if (IsApproximateZero(ComputeSpacialDistance(vLat0, vLon0, vLat1, vLon1)) || IsApproximateZero(ComputeSpacialDistance(vLat0, vLon0, vLat2, vLon2)))   {
+    // return new Tuple<double, double>(vLat0, vLon0);
+    tuple={ longitude: vLon0, latitude: vLat0 };
+  }
+  //如果线段端点在射线上
+  if (IsApproximateZero(pAAngle)) {
+    // return new Tuple<double, double>(vLat1, vLon1);
+    tuple={ longitude: vLon1, latitude: vLat1 };
+  }
+  if (IsApproximateZero(pOtherAAngle)) {
+    // return new Tuple<double, double>(vLat2, vLon2);
+    tuple.push={ longitude: vLon2, latitude: vLat2 };
+  }
+  //如果根据角度判断出无交线，不继续做计算
+  var pAngleDiff = ComputeAngle(vLat1, vLon1, vLat0, vLon0, vLat2, vLon2) - pAAngle - pOtherAAngle;
+  if (!IsApproximateZero(pAngleDiff)) {
+    return null;
+  }
+  //如果点在线上
+  if (IsApproximateZero(PointDistance2Line(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2))) {
+    // return new Tuple<double, double>(vLat0, vLon0);
+    tuple.push = { longitude: vLon0, latitude: vLat0 };
+  }
+
+  var pC = Angle2Arc(ComputeAngle(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2));
+  var pA = Angle2Arc(pAAngle);
+  var pb = ComputeSpacialDistance(vLat0, vLon0, vLat1, vLon1) / vRadius;
+  var pcLength = vRadius * Math.atan2(Math.sin(pb), Math.cos(pb) * Math.cos(pA) + Math.sin(pA) / Math.tan(pC));
+
+  // function computeOffset(vLat, vLon, vDistance, vHeading) {
+  tuple.push=ComputeOffset(vLat0, vLon0, pcLength, vHeading);
+  
+  return tuple;
+}
+
+
+/// 球面获取两线段交点
+/// 方便理解令11为A,12为B,21为C,22为D
+/// <param name="vP1Lat1"></param>
+/// <param name="vP1Lon1"></param>
+/// <param name="vP1Lat2"></param>
+/// <param name="vP1lon2"></param>
+/// <param name="vP2Lat1"></param>
+/// <param name="vP2Lon1"></param>
+/// <param name="vP2Lat2"></param>
+/// <param name="vP2Lon2"></param>
+function twoLineCross(vP1Lat1, vP1Lon1, vP1Lat2, vP1Lon2, vP2Lat1, vP2Lon1, vP2Lat2, vP2Lon2)
+{
+  var tuple = [];
+  //如果在端点处相交
+  if (IsApproximateZero(ComputeSpacialDistance(vP1Lat1, vP1Lon1, vP2Lat1, vP2Lon1)) || IsApproximateZero(ComputeSpacialDistance(vP1Lat1, vP1Lon1, vP2Lat2, vP2Lon2))) {
+    // return new Tuple<double, double>(vP1Lat1, vP1Lon1);
+    tuple.push({ longitude: vP1Lon1, latitude: vP1Lat1 });
+  }
+  if (IsApproximateZero(ComputeSpacialDistance(vP1Lat2, vP1Lon2, vP2Lat1, vP2Lon1)) || IsApproximateZero(ComputeSpacialDistance(vP1Lat2, vP1Lon2, vP2Lat2, vP2Lon2))) {
+    // return new Tuple<double, double>(vP1Lat2, vP1Lon2);
+    tuple.push({ longitude: vP1Lon2, latitude: vP1Lat2 });
+  }
+  //如果根据角度判断出不相交，不继续计算
+  var pAngleCAD = ComputeAngle(vP2Lat1, vP2Lon1, vP1Lat1, vP1Lon1, vP2Lat2, vP2Lon2);
+  var pAngleCAB = ComputeAngle(vP2Lat1, vP2Lon1, vP1Lat1, vP1Lon1, vP1Lat2, vP1Lon2);
+  var pAngleBAD = ComputeAngle(vP1Lat2, vP1Lon2, vP1Lat1, vP1Lon1, vP2Lat2, vP2Lon2);
+  var pAngleACB = ComputeAngle(vP1Lat1, vP1Lon1, vP2Lat1, vP2Lon1, vP1Lat2, vP1Lon2);
+  var pAngleACD = ComputeAngle(vP1Lat1, vP1Lon1, vP2Lat1, vP2Lon1, vP2Lat2, vP2Lon2);
+  var pAngleDCB = ComputeAngle(vP2Lat2, vP2Lon2, vP2Lat1, vP2Lon1, vP1Lat2, vP1Lon2);
+  var pAngleCBD = ComputeAngle(vP2Lat1, vP2Lon1, vP1Lat2, vP1Lon2, vP2Lat2, vP2Lon2);
+  var pAngleCBA = ComputeAngle(vP2Lat1, vP2Lon1, vP1Lat2, vP1Lon2, vP1Lat1, vP1Lon1);
+  var pAngleABD = ComputeAngle(vP1Lat1, vP1Lon1, vP1Lat2, vP1Lon2, vP2Lat2, vP2Lon2);
+  var pAngleADB = ComputeAngle(vP1Lat1, vP1Lon1, vP2Lat2, vP2Lon2, vP1Lat2, vP1Lon2);
+  var pAngleADC = ComputeAngle(vP1Lat1, vP1Lon1, vP2Lat2, vP2Lon2, vP2Lat1, vP2Lon1);
+  var pAngleCDB = ComputeAngle(vP2Lat1, vP2Lon1, vP2Lat2, vP2Lon2, vP1Lat2, vP1Lon2);
+  if (!(IsApproximateZero(pAngleCAD - pAngleCAB - pAngleBAD) &&
+    IsApproximateZero(pAngleACB - pAngleACD - pAngleDCB) &&
+    IsApproximateZero(pAngleCBD - pAngleCBA - pAngleABD) &&
+    IsApproximateZero(pAngleADB - pAngleADC - pAngleCDB))) {
+    return [];
+  }
+
+  tuple.push(raysLineCross(vP1Lat1, vP1Lon1, GetAzimuth(vP1Lat1, vP1Lon1, vP1Lat2, vP1Lon2), vP2Lat1, vP2Lon1, vP2Lat2, vP2Lon2))
+  return tuple;
 }
 
 
@@ -961,9 +1442,33 @@ Page({
             }
         }
 
-        var basePoint = this.basePoint(jingduMinPoint.latitude, jingduMinPoint.longitude, headingAngle, weiduMinPoint.latitude,this.data.polyline[this.data.polyline.length-1].points);
+        var basePoint = basePointFunction(jingduMinPoint.latitude, jingduMinPoint.longitude, headingAngle, weiduMinPoint.latitude,this.data.polyline[this.data.polyline.length-1].points);
+
+        var cutpoint = [];
+        cutpoint = getEdgeCutPoint(this.data.polyline[this.data.polyline.length - 1].points, headingAngle);
+        this.data.polyline[this.data.polyline.length] = {
+          points: cutpoint,
+          color: "#199991",
+          width: 5,
+          dottedLine: false,
+        }
+
+        this.data.polyline[this.data.polyline.length] = {
+          points: [basePoint, jingduMinPoint],
+          color: "#111111",
+          width: 5,
+          dottedLine: false,
+        }
+
         //第一次根据基准点求偏移点，偏移量是幅宽的一半
-        var basePointOffset = this.ComputeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , headingAngle + 90);
+        var basePointOffset = computeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , headingAngle + 90);
+      
+      this.data.polyline[this.data.polyline.length] = {
+        points: [basePoint, basePointOffset],
+        color: "#111111",
+        width: 5,
+        dottedLine: false,
+      }
 
         //放置的根据每一个偏移点和作业区的交点的集合。如果为空，就说明根据该偏移点，没有航线生成，求航线的逻辑可以结束。
         var crossPoints = [];
@@ -972,7 +1477,7 @@ Page({
 
         for (var i = 0; i < length; i++) {
             //从偏移点出发的射线和作业区的交点
-            tempCrossPointArray = LineCross(basePointOffset.latitude, basePointOffset.longitude, this.data.headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
+          tempCrossPointArray = lineCross(basePointOffset.latitude, basePointOffset.longitude, this.data.headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
             if (tempCrossPointArray.length > 0) {
                 crossPoints.push({
                     longitude: tempCrossPointArray[0].longitude,
@@ -981,19 +1486,26 @@ Page({
             }
         }
 
+      this.data.polyline[this.data.polyline.length] = {
+        points: [crossPoints[0], crossPoints[1]],
+        color: "#111111",
+        width: 8,
+        dottedLine: false,
+      }
+
         while( crossPoints.length > 0 ){
 
             this.data.crossPoints.push(crossPoints.slice(0));
 
             crossPoints.length=0;
             //根据偏移点求偏移点，偏移量是幅宽
-            basePointOffset = this.ComputeOffset(basePointOffset.latitude, basePointOffset.longitude, this.data.operateWidth, headingAngle + 90);
+            basePointOffset = computeOffset(basePointOffset.latitude, basePointOffset.longitude, this.data.operateWidth, headingAngle + 90);
 
             tempCrossPointArray = [];
 
             for (var i = 0; i < length; i++) {
                 //从偏移点出发的射线和作业区的交点
-                tempCrossPointArray = LineCross(basePointOffset.latitude, basePointOffset.longitude, this.data.headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
+              tempCrossPointArray = lineCross(basePointOffset.latitude, basePointOffset.longitude, this.data.headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
                 if (tempCrossPointArray.length > 0) {
                     crossPoints.push({
                         longitude: tempCrossPointArray[0].longitude,
@@ -1021,49 +1533,7 @@ Page({
         })
 
     },
-    //找到中间点的基点，即第一个点的函数,求航线和作业区交点的第一个点，（这个点根据已知直线和点以及点在直线的角度，求交点得出的）
-    basePoint:function(vLat0, vLon0, vHeading, vLat1, allPoints) {
-        // A0*X + Bo*Y + C0 = 0
-        var pKAngle = Heading2KAndgle(vHeading);
-        var A0 = Math.tan(pKAngle * Math.PI / 180);//斜率
-        var B0 = -1;
-        var C0 = vLat0 - Math.tan(pKAngle * Math.PI / 180) * vLon0;
 
-        //求出距离 经过最小经度点的直线的左边最远的点
-        var result = 0,resultKey = 0,flag = false;
 
-        for(var i = 0 ; i < allPoints.length-1 ; i ++ ){
-            if(A0*allPoints[i].longitude+B0*allPoints[i].latitude+C0 < result){
-                resultKey=i;
-                result = A0*allPoints[i].longitude+B0*allPoints[i].latitude+C0;
-                flag = true;
-            }
-        }
-        //如果有点在直线的左边，那就重新设置C0
-        if(flag){
-            C0 = allPoints[resultKey].latitude - Math.tan(pKAngle * Math.PI / 180) * allPoints[resultKey].longitude;
-        }
-
-        return {
-            longitude: -(C0 + B0 * vLat1) / A0,
-            //latitude: Math.abs(-(A0 * vLon1 + C0 )/ B0)
-            latitude: vLat1
-        };
-    },
-
-    //已知一个点、距离、航向角，求终点
-    ComputeOffset:function(vLat, vLon, vDistance, vHeading) {
-        var pDistanceArc = vDistance / vRadius;
-        var pHArc = Angle2Arc(vHeading);
-        var pLatArc = Angle2Arc(vLat);
-        var pDAC = Math.cos(pDistanceArc);
-        var pDAS = Math.sin(pDistanceArc);
-        var pLAS = Math.sin(pLatArc);
-        var pLAC = Math.cos(pLatArc);
-        var rLatS = pDAC * pLAS + pDAS * pLAC * Math.cos(pHArc);
-        return {
-            latitude:Arc2Angle(Math.asin(rLatS)),
-            longitude:Arc2Angle(Angle2Arc(vLon) + Math.atan2(pDAS * pLAC * Math.sin(pHArc), pDAC - pLAS * rLatS))
-        }
-    },
+    
 })
