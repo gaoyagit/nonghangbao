@@ -1469,214 +1469,127 @@ Page({
     },
     //**************************************************生成航线****************************************
     generateNavLine:function() {
-        // var _this = this;
-        
-        var weiduMinPoint, jingduMinPoint;
-        var headingAngle = this.data.headingAngle < 0 ? this.data.headingAngle+180 : this.data.headingAngle;
-        var copyOperationArray = JSON.parse(JSON.stringify(this.data.operationArray));
-        weiduMinPoint = copyOperationArray[0];
-        jingduMinPoint = copyOperationArray[0];
+          // var _this = this;
+          
+          // var weiduMinPoint, jingduMinPoint;
+          var headingAngle = this.data.headingAngle < 0 ? this.data.headingAngle+180 : this.data.headingAngle;
+          var copyOperationArray = JSON.parse(JSON.stringify(this.data.operationArray));//当前作业区
+          var length = copyOperationArray.length - 1;
+          var cutpoint = [];//最边界的切点，两个切点包围一个作业区域
+          cutpoint = getEdgeCutPoint(this.data.polyline[this.data.polyline.length - 1].points, headingAngle);
+          var cutPointInLine = [];//存放切线线段的两个端点
+          var longestDistance = getLongestDistance(copyOperationArray);//当前作业区域最长距离
 
-        var length = copyOperationArray.length - 1;
-
-        for (var i = 0; i < length; i++) {
-            if (copyOperationArray[i].latitude < weiduMinPoint.latitude) {
-                weiduMinPoint = copyOperationArray[i]
-            }
-            if (copyOperationArray[i].longitude < jingduMinPoint.longitude) {
-                jingduMinPoint = copyOperationArray[i]
-            }
-        }
-
-        var basePoint = basePointFunction(jingduMinPoint.latitude, jingduMinPoint.longitude, headingAngle, weiduMinPoint.latitude,this.data.polyline[this.data.polyline.length-1].points);
-
-        var cutpoint = [];
-        cutpoint = getEdgeCutPoint(this.data.polyline[this.data.polyline.length - 1].points, headingAngle);
-        // this.data.polyline[this.data.polyline.length] = {
-        //   points: cutpoint,
-        //   color: "#199991",
-        //   width: 5,
-        //   dottedLine: false,
-        // }
-
-        // this.data.polyline[this.data.polyline.length] = {
-        //   points: [basePoint, jingduMinPoint],
-        //   color: "#111111",
-        //   width: 5,
-        //   dottedLine: false,
-        // }
-
-        // twoLineCross(vP1Lat1, vP1Lon1, vP1Lat2, vP1Lon2, vP2Lat1, vP2Lon1, vP2Lat2, vP2Lon2)
-        var cutPointInLine = [];//存放切线线段的两个端点
-        var longestDistance = getLongestDistance(this.data.polyline[0].points);
-        cutPointInLine.push(computeOffset(cutpoint[0].latitude, cutpoint[0].longitude, -longestDistance, headingAngle));
-
-        cutPointInLine.push(computeOffset(cutpoint[0].latitude, cutpoint[0].longitude, longestDistance, headingAngle));
-
-          this.data.polyline[this.data.polyline.length] = {
-            points: cutPointInLine,
-            color: "#111111",
-            width: 5,
-            dottedLine: false,
-          }
+          cutPointInLine.push(computeOffset(cutpoint[0].latitude, cutpoint[0].longitude, -longestDistance, headingAngle));
+          cutPointInLine.push(computeOffset(cutpoint[0].latitude, cutpoint[0].longitude, longestDistance, headingAngle));
 
           var basePointOffsetArray = [];
           basePointOffsetArray.push(computeOffset(cutPointInLine[0].latitude, cutPointInLine[0].longitude, this.data.operateWidth / 2, headingAngle + 90));
           basePointOffsetArray.push(computeOffset(cutPointInLine[1].latitude, cutPointInLine[1].longitude, this.data.operateWidth / 2, headingAngle + 90));
-          // this.data.polyline[this.data.polyline.length] = {
-          //   points: basePointOffsetArray,
-          //   color: "#111111",
-          //   width: 5,
-          //   dottedLine: false,
-          // }
+          
 
-          var crossPointsTest = [];
+          var crossPoints = [];
 
-          var tempCrossPointArrayTest = [];
+          var tempCrossPointArray = [];
           for (var i = 0; i < length; i++) {
             //从偏移点出发的射线和作业区的交点
-            tempCrossPointArrayTest = twoLineCross(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude);
-            if (tempCrossPointArrayTest.length > 0) {
-              crossPointsTest.push({
-                longitude: tempCrossPointArrayTest[0].longitude,
-                latitude: tempCrossPointArrayTest[0].latitude
+            tempCrossPointArray = twoLineCross(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude);
+            if (tempCrossPointArray.length > 0) {
+              crossPoints.push({
+                longitude: tempCrossPointArray[0].longitude,
+                latitude: tempCrossPointArray[0].latitude
+              })
+            }
+          }
+        // console.log("crossPoints.length"+crossPoints.length);
+        if (crossPoints.length > 0){
+          while (crossPoints.length > 0) {
+
+            this.data.crossPoints.push(crossPoints.slice(0));
+
+            crossPoints.length = 0;
+            tempCrossPointArray = [];
+
+            //根据偏移点求偏移点，偏移量是幅宽
+            // basePointOffsetArray = [];
+            basePointOffsetArray[0] = computeOffset(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, this.data.operateWidth, headingAngle + 90);
+            basePointOffsetArray[1] = computeOffset(basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operateWidth, headingAngle + 90);
+
+
+            for (var i = 0; i < length; i++) {
+              //从偏移点出发的射线和作业区的交点
+              tempCrossPointArray = twoLineCross(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude);
+              if (tempCrossPointArray.length > 0) {
+                crossPoints.push({
+                  longitude: tempCrossPointArray[0].longitude,
+                  latitude: tempCrossPointArray[0].latitude
+                })
+              }
+            }
+          }
+        }else{
+
+          basePointOffsetArray = [];
+          basePointOffsetArray.push(computeOffset(cutPointInLine[0].latitude, cutPointInLine[0].longitude, this.data.operateWidth / 2, headingAngle - 90));
+          basePointOffsetArray.push(computeOffset(cutPointInLine[1].latitude, cutPointInLine[1].longitude, this.data.operateWidth / 2, headingAngle - 90));
+
+          crossPoints = [];
+          tempCrossPointArray = [];
+
+          for (var i = 0; i < length; i++) {
+            //从偏移点出发的射线和作业区的交点
+            tempCrossPointArray = twoLineCross(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude);
+            if (tempCrossPointArray.length > 0) {
+              crossPoints.push({
+                longitude: tempCrossPointArray[0].longitude,
+                latitude: tempCrossPointArray[0].latitude
               })
             }
           }
 
-
-          // while (crossPointsTest.length > 0) {
-
-          //   this.data.crossPoints.push(crossPointsTest.slice(0));
-
-          //   crossPointsTest.length = 0;
-          //   tempCrossPointArrayTest = [];
-            
-          //   //根据偏移点求偏移点，偏移量是幅宽
-          //   basePointOffsetArray = [];
-          //   basePointOffsetArray.push(computeOffset(cutPointInLine[0].latitude, cutPointInLine[0].longitude, this.data.operateWidth , headingAngle + 90));
-          //   basePointOffsetArray.push(computeOffset(cutPointInLine[1].latitude, cutPointInLine[1].longitude, this.data.operateWidth , headingAngle + 90));
-
-            
-
-          //   for (var i = 0; i < length; i++) {
-          //     //从偏移点出发的射线和作业区的交点
-          //     tempCrossPointArrayTest = twoLineCross(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude);
-          //     if (tempCrossPointArrayTest.length > 0) {
-          //       crossPointsTest.push({
-          //         longitude: tempCrossPointArrayTest[0].longitude,
-          //         latitude: tempCrossPointArrayTest[0].latitude
-          //       })
-          //     }
-          //   }
-          // }
-
-          // var crossPointsLength = this.data.crossPoints.length;//单个作业区域航线的个数
-          // for (var j = 0; j < crossPointsLength; j++) {
-          //   this.data.polyline[this.data.polyline.length] = {
-          //     points: this.data.crossPoints[j],
-          //     color: "#128612",
-          //     width: 2,
-          //     dottedLine: false,
-          //   }
-          // }
-
-          // this.setData({
-          //   polyline: this.data.polyline,
-          //   operationArray: this.data.operationArray,
-          //   crossPoints: []
-          // })
-
-          this.data.polyline[this.data.polyline.length] = {
-            points: crossPointsTest,
-            color: "#111111",
-            width: 5,
-            dottedLine: false,
-          }
-
-
-
-
-        //第一次根据基准点求偏移点，偏移量是幅宽的一半
-        var basePointOffset = computeOffset(basePoint.latitude, basePoint.longitude, this.data.operateWidth /2 , headingAngle + 90);
-      
-      // this.data.polyline[this.data.polyline.length] = {
-      //   points: [basePoint, basePointOffset],
-      //   color: "#111111",
-      //   width: 5,
-      //   dottedLine: false,
-      // }
-
-      
-
-      // this.data.polyline[this.data.polyline.length] = {
-      //   points: crossPointsTest,
-      //   color: "#111111",
-      //   width: 5,
-      //   dottedLine: false,
-      // }
-
-        //放置的根据每一个偏移点和作业区的交点的集合。如果为空，就说明根据该偏移点，没有航线生成，求航线的逻辑可以结束。
-        var crossPoints = [];
-
-        var tempCrossPointArray = [];
-
-        for (var i = 0; i < length; i++) {
-            //从偏移点出发的射线和作业区的交点
-          tempCrossPointArray = lineCross(basePointOffset.latitude, basePointOffset.longitude, this.data.headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
-            if (tempCrossPointArray.length > 0) {
-                crossPoints.push({
-                    longitude: tempCrossPointArray[0].longitude,
-                    latitude: tempCrossPointArray[0].latitude
-                })
-            }
-        }
-
-      // this.data.polyline[this.data.polyline.length] = {
-      //   points: [crossPoints[0], crossPoints[1]],
-      //   color: "#111111",
-      //   width: 8,
-      //   dottedLine: false,
-      // }
-
-        while( crossPoints.length > 0 ){
+          while (crossPoints.length > 0) {
 
             this.data.crossPoints.push(crossPoints.slice(0));
 
-            crossPoints.length=0;
-            //根据偏移点求偏移点，偏移量是幅宽
-            basePointOffset = computeOffset(basePointOffset.latitude, basePointOffset.longitude, this.data.operateWidth, headingAngle + 90);
-
+            crossPoints.length = 0;
             tempCrossPointArray = [];
 
+            //根据偏移点求偏移点，偏移量是幅宽
+            // basePointOffsetArray = [];
+            basePointOffsetArray[0] = computeOffset(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, this.data.operateWidth, headingAngle - 90);
+            basePointOffsetArray[1] = computeOffset(basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operateWidth, headingAngle - 90);
+
+
             for (var i = 0; i < length; i++) {
-                //从偏移点出发的射线和作业区的交点
-              tempCrossPointArray = lineCross(basePointOffset.latitude, basePointOffset.longitude, this.data.headingAngle, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude)
-                if (tempCrossPointArray.length > 0) {
-                    crossPoints.push({
-                        longitude: tempCrossPointArray[0].longitude,
-                        latitude: tempCrossPointArray[0].latitude
-                    })
-                }
+              //从偏移点出发的射线和作业区的交点
+              tempCrossPointArray = twoLineCross(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operationArray[i].latitude, this.data.operationArray[i].longitude, this.data.operationArray[i + 1].latitude, this.data.operationArray[i + 1].longitude);
+              if (tempCrossPointArray.length > 0) {
+                crossPoints.push({
+                  longitude: tempCrossPointArray[0].longitude,
+                  latitude: tempCrossPointArray[0].latitude
+                })
+              }
             }
+          }
+
         }
-        
-        // ****************为什么可以对polyline赋值，并没有影响前面polyline数组里面的值*****************
-        var crossPointsLength = this.data.crossPoints.length;//单个作业区域航线的个数
-        for (var j = 0; j < crossPointsLength; j++) {
+ 
+
+          var crossPointsLength = this.data.crossPoints.length;//单个作业区域航线的个数
+          for (var j = 0; j < crossPointsLength; j++) {
             this.data.polyline[this.data.polyline.length] = {
-                points: this.data.crossPoints[j],
-                color: "#128612",
-                width: 2,
-                dottedLine: false,
+              points: this.data.crossPoints[j],
+              color: "#128612",
+              width: 2,
+              dottedLine: false,
             }
-        }
-        
-        this.setData({
+          }
+
+          this.setData({
             polyline: this.data.polyline,
-            operationArray:this.data.operationArray,
-            crossPoints:[]
-        })
+            operationArray: this.data.operationArray,
+            crossPoints: []
+          })
 
     },
 

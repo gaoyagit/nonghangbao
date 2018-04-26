@@ -64,13 +64,18 @@ Page({
   },
   receive: function () {
     wx.navigateTo({
-      url: '../../pages/jsmap/map'
+      url: '../../pages/receiveMap/map'
     })
   },
   default: function () {
     wx.navigateTo({
-      url: '../../pages/qsmap/qsmap'
+      url: '../../pages/defaultMap/map'
     })
   },
+  makePhoneCall:function(){
+    wx.makePhoneCall({
+      phoneNumber: '010-22222222' //仅为示例，并非真实的电话号码
+    })
+  }
 
 })

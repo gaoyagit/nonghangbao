@@ -1,6 +1,6 @@
 /**index.wxss**/
 .containerBox{
-  background-color: gray;
+  background-color: white;
   height: 25vh; 
 }
 .userinfo {
@@ -62,5 +62,9 @@
 }
 .contactUsBox{
   height: 15vh;
-  background-color: gainsboro;
+  background-color: white;
+  text-align: center;
+  padding-top: 2vh;
+  color: gainsboro;
+  font-size: 14px;
 }
