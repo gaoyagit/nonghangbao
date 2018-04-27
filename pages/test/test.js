@@ -1303,13 +1303,11 @@ Page({
         // wayPointIndex:0//存放当前应该经过航点的坐标
       
       if (_this.data.wayPointsArray[_this.data.wayPointIndex] != null ){
-        if (_this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex] == null){
-          _this.data.allNavigationDot = _this.data.allNavigationDot.concat(_this.data.navigationDot);
+        if (_this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex] == null){  
           _this.data.wayPointIndex++;
           _this.data.wayPointSubIndex = 0;
-          _this.data.navigationDot = [];
-
-
+          // _this.data.navigationDot = [];
+          console.log("我运行到这一步了");
         }
         _this.data.liveLocation = {
           latitude: _this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex].latitude,
@@ -1322,12 +1320,31 @@ Page({
         });//将飞机飞行经过的点存放在navigationDot数组中
 
         //存航点
-        _this.data.polyline[_this.data.polyline.length] = {
-          points: _this.data.navigationDot,
-          color: "#128612",
-          width: 5,
-          dottedLine: false,
+        var navigationLastDot;//navigationDot数组中的最后一个点
+        if (_this.data.polyline[_this.data.polyline.length - 1].points.length > 500) {
+          _this.data.allNavigationDot = _this.data.allNavigationDot.concat(_this.data.navigationDot);
+          navigationLastDot = _this.data.navigationDot[_this.data.navigationDot.length - 1];
+          _this.data.navigationDot = [];
+          _this.data.navigationDot.push({
+            latitude:navigationLastDot.latitude,
+            longitude: navigationLastDot.longitude
+            });
+          _this.data.polyline[_this.data.polyline.length] = {
+            points: _this.data.navigationDot,
+            color: "#128612",
+            width: 2,
+            dottedLine: false,
+          }
+          // console.log("我运行到这一步了");
+        }else{
+          _this.data.polyline[_this.data.polyline.length - 1] = {
+            points: _this.data.navigationDot,
+            color: "#128612",
+            width: 2,
+            dottedLine: false,
+          }
         }
+              
         _this.setData({
           polyline: _this.data.polyline,
           liveLocation: _this.data.liveLocation,
@@ -1335,6 +1352,8 @@ Page({
         })
         _this.data.wayPointSubIndex++;
        
+      }else{
+        clearInterval(this.data.startNavigationTimer);
       }
       // wx.getLocation({
       //   type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
