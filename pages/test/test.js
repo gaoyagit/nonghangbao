@@ -1323,6 +1323,7 @@ Page({
         var navigationLastDot;//navigationDot数组中的最后一个点
         if (_this.data.polyline[_this.data.polyline.length - 1].points.length > 500) {
           _this.data.allNavigationDot = _this.data.allNavigationDot.concat(_this.data.navigationDot);
+          // 放到 + 1的时候，前面的navigationDot数据就不用写进 + 1位置了，所以就清空了，把navigationDot的最后一个数据写进去 + 1位置，是为了让polyline相连，不至于断一节
           navigationLastDot = _this.data.navigationDot[_this.data.navigationDot.length - 1];
           _this.data.navigationDot = [];
           _this.data.navigationDot.push({
