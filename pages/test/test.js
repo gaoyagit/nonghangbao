@@ -1301,13 +1301,17 @@ Page({
       var _this = this;
       // wayPointsArray: fileData.mtData().list,//存放测试航点的数组
         // wayPointIndex:0//存放当前应该经过航点的坐标
-      
+        //如果运行完以后，就结束导航
+      if (_this.data.wayPointIndex == (_this.data.wayPointsArray.length - 1) && _this.data.wayPointSubIndex == (_this.data.wayPointsArray[_this.data.wayPointsArray.length - 1].length-1)){
+        _this.finishNavigation ();
+        
+      }
       if (_this.data.wayPointsArray[_this.data.wayPointIndex] != null ){
         if (_this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex] == null){  
           _this.data.wayPointIndex++;
           _this.data.wayPointSubIndex = 0;
           // _this.data.navigationDot = [];
-          console.log("我运行到这一步了");
+          // console.log("我运行到这一步了");
         }
         _this.data.liveLocation = {
           latitude: _this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex].latitude,
