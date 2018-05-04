@@ -22,149 +22,55 @@ function mtData() {
   var arr = {
     list: [
       [
-        {
-          latitude:39.35834092349247,
-          longitude:116.3055073147412,
-        },
-
-        {
-          latitude: 39.35787637500922,
-          longitude: 116.31563533598144,
+        { 
+          latitude: 46.12579712418785, longitude: 123.80705816114897
         },
         {
-          latitude: 39.35502265226699,
-          longitude: 116.31391872221191,
+          // latitude: 46.126926861350945, longitude: 123.80978917563363
+          latitude: 46.12589660478995, longitude: 123.80764489579359
         },
         {
-          latitude: 39.35382803604249,
-          longitude: 116.30911220365722,
+          // latitude: 46.11917486270457, longitude: 123.811904560357
+          latitude: 46.12030653632977, longitude: 123.80917709239652
         },
         {
-          latitude:39.35834092349247,
-          longitude:116.3055073147412,
-        },
-      ],[
-        {
-          latitude:39.36165903710342,
-          longitude:116.30936969572265,
-        },
-
-        {
-          latitude: 39.36298623841493,
-          longitude: 116.3172661190625,
+          latitude: 46.12075881433827, longitude: 123.808443362397
         },
         {
-          latitude: 39.35887183226201,
-          longitude: 116.31675113493164,
+          latitude: 46.12579712418785, longitude: 123.80705816114897
         },
         {
-          latitude: 39.35940273699663,
-          longitude: 116.31263126188476,
+          headingAngle:169,
+          operateWidth: 22,
+        }
+      ],
+      [
+        {
+          // latitude: 46.1258142832645, longitude: 123.807198568961,
+          latitude: 46.12707017765048, longitude: 123.80991033595289    
         },
         {
-          latitude:39.36165903710342,
-          longitude:116.30936969572265,
+          latitude: 46.12804584549345, longitude: 123.81267156832216
         },
-      ],[{
-        operateWidth:100,
-      }
-      ]
-      
-      
-    //   {
-    //     id: '1',
-    //     MTId: 'MT001',
-    //     status: 'working',
-    //     Duration: 3,
-    //     Operator: 'tom',
-    //     IdleReason: 'lunch'
-    //     // dot0:{
-    //     //   latitude:39.35834092349247,
-    //     //   longitude:116.3055073147412,
-    //     // },
-       
-    //     // dot1: {
-    //     //   latitude: 39.35787637500922,
-    //     //   longitude: 116.31563533598144,
-    //     // },
-    //     // dot2: {
-    //     //   latitude: 39.35502265226699,
-    //     //   longitude: 116.31391872221191,
-    //     // },
-    //     // dot3: {
-    //     //   latitude: 39.35382803604249,
-    //     //   longitude: 116.30911220365722,
-    //     // },
-    //     // dot4:{
-    //     //   latitude:39.35834092349247,
-    //     //   longitude:116.3055073147412,
-    //     // },
-        
-    //   }, {
-    //     id: '2',
-    //     MTId: 'MT002',
-    //     status: 'Idle',
-    //     Duration: 7,
-    //     Operator: 'jerry',
-    //     IdleReason: 'reparied',
-
-    //     // dot0:{
-    //     //   latitude:39.36165903710342,
-    //     //   longitude:116.30936969572265,
-    //     // },
-
-    //     // dot1: {
-    //     //   latitude: 39.36298623841493,
-    //     //   longitude: 116.3172661190625,
-    //     // },
-    //     // dot2: {
-    //     //   latitude: 39.35887183226201,
-    //     //   longitude: 116.31675113493164,
-    //     // },
-    //     // dot3: {
-    //     //   latitude: 39.35940273699663,
-    //     //   longitude: 116.31263126188476,
-    //     // },
-    //     // dot0:{
-    //     //   latitude:39.36165903710342,
-    //     //   longitude:116.30936969572265,
-    //     // },
-    //   }, {
-    //     id: '3',
-    //     MTId: 'MT003',
-    //     status: 'Idle',
-    //     Duration: 6,
-    //     Operator: 'tom',
-    //     IdleReason: 'lunch'
-    //   }, {
-    //     id: '4',
-    //     MTId: 'MT004',
-    //     status: 'working',
-    //     Duration: 9,
-    //     Operator: 'jerry',
-    //     IdleReason: 'reparied'
-    //   }, {
-    //     id: '5',
-    //     MTId: 'MT005',
-    //     status: 'Idle',
-    //     Duration: 2,
-    //     Operator: 'tom',
-    //     IdleReason: 'lunch'
-    //   }, {
-    //     id: '6',
-    //     MTId: 'MT006',
-    //     status: 'working',
-    //     Duration: 6,
-    //     Operator: 'jerry',
-    //     IdleReason: 'reparied'
-    //   }, {
-    //     id: '7',
-    //     MTId: 'MT007',
-    //     status: 'Idle',
-    //     Duration: 1,
-    //     Operator: 'tom',
-    //     IdleReason: 'lunch'
-    //   }
+        {
+          latitude: 46.11783746971583, longitude: 123.81563525799756
+        },
+        {
+          latitude: 46.119070781162826, longitude: 123.81219409340613
+        },
+        {
+          // latitude: 46.1258142832645, longitude: 123.807198568961,
+          latitude: 46.12707017765048, longitude: 123.80991033595289
+        },
+        {
+          headingAngle: 169,
+          operateWidth: 26,
+        }
+      ],
+      // [{
+      //   operateWidth:22,
+      // }
+      // ]
     ]
   }
   return arr

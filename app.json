@@ -1,9 +1,9 @@
 {
   "pages": [
     "pages/test/test",
-    "pages/_map/map",
-    
     "pages/receiveMap/map",
+    
+    "pages/_map/map",
   
     "pages/mode/mode",
     "pages/defaultMap/map",

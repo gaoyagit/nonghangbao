@@ -379,6 +379,7 @@ function GetRecentAreaPosition(polylineArray, airPosition, allOperationAreaInPol
   var shortestAreaIndex = 0;//存放离飞机位置最近的作业区的索引
   var aircraftToSingleAreaDistance = [];//存放飞机距离每个作业区的边界点的距离
   var aircraftToAreaDistance = [];//存放飞机距离每个作业区的边界点的最短距离
+  var temporaryArea = [];//存放第一个flag！=1的作业区域，用作找当前作业区域的比较
 
   for (var i = 0; i < length; i++) {
     if (polylineArray[i].points.length > 3) {
@@ -394,12 +395,20 @@ function GetRecentAreaPosition(polylineArray, airPosition, allOperationAreaInPol
     }
   }
 
+  // 找到一个flag！=1的作业区域
+  for (var i = 0; i < length; i++) {
+    if (aircraftToAreaDistance[i] !== -1 && aircraftToAreaDistance[i].flag != 1) {
+      temporaryArea = aircraftToAreaDistance[i];
+    }
+  }
+
 
   // 找到距离飞机最近的作业区域在polyline中的位置
   for (var i = 0; i < length; i++) {
     if (aircraftToAreaDistance[i] !== -1) {
-      if ((aircraftToAreaDistance[i][0] < aircraftToAreaDistance[shortestAreaIndex][0]) && (allOperationAreaInPolyline[i].flag == 0)) {
+      if ((aircraftToAreaDistance[i][0] <= temporaryArea[0]) && (allOperationAreaInPolyline[i].flag == 0)) {
         shortestAreaIndex = i;
+        temporaryArea = aircraftToAreaDistance[i];
       }
     }
   }
@@ -609,7 +618,7 @@ function basePointFunctionTest(vLat0, vLon0, vHeading, vLat1, allPoints) {
   return resultDotLonLat;
 }
 
-//判断作业区域的所有flag，未作业的flag = 0；作业过的flag = 1，若有未作业过的区域，返回true，全部作业返回,false，aircraftToNavIndexInPolyline由于allOperationAreaInPolyline是polyline数组的再现，包括飞机作业时的航点，在polyline【polyline.length】>2,所以传进来aircraftToNavIndexInPolyline作为找作业区域的终止长度
+//判断作业区域的所有flag，未作业的flag = 0；作业过的flag = 1，若有未作业过的区域，返回true，全部作业返回,false，aircraftToNavIndexInPolyline由于allOperationAreaInPolyline是polyline数组的再现，包括飞机作业时的航点，在polyline[polyline.length]>2,所以传进来aircraftToNavIndexInPolyline作为找作业区域的终止长度
 function getJudgmentAreaFlag(allOperationAreaInPolyline, aircraftToNavIndexInPolyline) {
 
   var len = aircraftToNavIndexInPolyline;
@@ -831,7 +840,30 @@ function twoLineCross(vP1Lat1, vP1Lon1, vP1Lat2, vP1Lon2, vP2Lat1, vP2Lon1, vP2L
 }
 
 
-var fileData = require('../../utils/dataTest.js')
+//OperationArea当前作业区域，getLongestSide找到当前作业区域的最长边
+function getLongestSide(OperationArea) {
+  var longestSideArray = [];//存放最长边的两个点以及距离
+  var sideAndDistance = [];//存放两点与两点之间的距离
+
+  for (var i = 0; i < OperationArea.length - 1; i++) {
+    longestSideArray.push({
+      firstDot: OperationArea[i],
+      secondDot: OperationArea[i + 1],
+      distance: ComputeSpacialDistance(OperationArea[i].latitude, OperationArea[i].longitude, OperationArea[i + 1].latitude, OperationArea[i + 1].longitude, vRadius)
+    })
+  }
+
+  longestSideArray = longestSideArray.sort(function (itema, itemb) {
+    return itema.distance - itemb.distance
+  })[longestSideArray.length - 1];
+
+  return longestSideArray;
+}
+
+
+
+var aircraftPointData = require('../../utils/dataTest.js')
+var operationAreaData = require('../../utils/data.js') 
 Page({
   data: {
     polyline: [],
@@ -843,7 +875,7 @@ Page({
     scale: '14',
     EarthRadius: 6378136.49,
     polylineAllLength: 0,//全局polyline长度
-    operationDisplay: 1,//控制是否显示设置作业区的按钮的选项
+    // operationDisplay: 1,//控制是否显示设置作业区的按钮的选项
     allOperationArray: [],//所有作业区域的坐标点，例如allOperationArray[0]存放第一个作业区，allOperationArray[1]存放第二个作业区
     operationArray: [],//生成单个作业区的各个坐标点的数组
     operateWidth: 0,//幅宽，也就是作业宽度
@@ -856,9 +888,6 @@ Page({
     setOperateWidthViewDisplay: 0,//设置幅宽view
     navViewDisplay: 0,//开始导航view
 
-    resetDisabled: 1,//重置按钮是否可用
-    dataDisabled: 1,//航向角幅宽按钮
-    nextDisabled: 0,//设置下一个按钮
 
     navButtonDisplay: 1,//导航按钮
 
@@ -871,8 +900,7 @@ Page({
     stopFlag: 0,//当stopFlag为1时清空导航的计时器，结束导航
 
     navigationDot: [],//飞机飞行经过的点
-    allNavigationDot:[],//总数组  飞机飞行经过的点
-  
+    allNavigationDot: [],//总数组  飞机飞行经过的点
     
     startNavigationTimer: null,
 
@@ -882,13 +910,18 @@ Page({
     navPoints: [],//每一次导航的时候，要飞航线点的顺序集合
     navIndex: 0,//导航的时候，navPoints航线点的索引
 
-    wayPointsArray: fileData.mtData().list,//存放测试航点的数组
-    wayPointIndex:0,//二维坐标存放当前应该经过航点的数组坐标
-    wayPointSubIndex: 0//存放当前应该经过航点的坐标
+    totalOperationArea: operationAreaData.mtData().list,//存放全部作业区域的数组
 
+    wayPointsArray: aircraftPointData.mtData().list,//存放测试航点的数组
+    wayPointIndex: 0,//二维坐标存放当前应该经过航点的数组坐标
+    wayPointSubIndex: 0,//存放当前应该经过航点的坐标
+
+    aircraftPointArrayInPolylineIndex:0,//航点存放在polyline的位置
+
+    startDisabled:1,//开始按钮
+    pauseDisabled:0,//暂停按钮
+    finishDisabled:0,//结束按钮
   },
-
-
 
   // getLiveLocationTimes:1,
 
@@ -896,6 +929,48 @@ Page({
   onLoad: function () {
     var _this = this;
     this.mapCtx = wx.createMapContext('map');
+
+    //设置作业区域以及生成航线
+    var currentOperationArea = [];//当前作业区域
+    var longestSideArray;//存放最长边的信息
+    // var headingAngle = 0;//最长边的角度
+    var resultTest;
+
+    var testFirstDot = {
+      latitude: 46.1258794458852, longitude: 123.807504487728
+    }
+    var testSecondDot = {
+      latitude: 46.120289377425, longitude: 123.809036698577,
+    };
+    // computeOffset(vLat, vLon, vDistance, vHeading)
+    // this.data.totalOperationArea[this.data.totalOperationArea.length - 1][0].operateWidth / 2
+    var testResultDot1 = computeOffset(testFirstDot.latitude, testFirstDot.longitude, 11 ,80);
+    var testResultDot2 = computeOffset(testSecondDot.latitude, testSecondDot.longitude, 11, 80);
+    console.log("testResultDot1" + "  latitude:" + testResultDot1.latitude +",  longitude:"+testResultDot1.longitude);
+    console.log("testResultDot2" + "  latitude:" + testResultDot2.latitude + ",  longitude:" + testResultDot2.longitude);
+
+
+    for (var i = 0; i < _this.data.totalOperationArea.length; i++) {
+      for (var j = 0; j < _this.data.totalOperationArea[i].length - 1; j++) {
+        currentOperationArea.push(_this.data.totalOperationArea[i][j]);
+      }
+      _this.data.polyline[_this.data.polyline.length] = {
+        points: currentOperationArea,
+        color: "#FF0000DD",
+        width: 2,
+        dottedLine: false
+      }
+
+      currentOperationArea = [];
+      _this.data.operationArray = _this.data.totalOperationArea[i];
+      _this.generateNavLine();
+    }
+    _this.setData({
+      polyline: _this.data.polyline,
+      aircraftToNavIndexInPolyline: _this.data.polyline.length,
+    })
+    console.log("aircraftToNavIndexInPolyline" + _this.data.aircraftToNavIndexInPolyline);
+
     wx.getLocation({
       success: function (res) {
         _this.setData({
@@ -933,7 +1008,7 @@ Page({
             iconPath: '/pages/images/circle_location.png',
             position: {
               left: res.windowWidth - 60,
-              top: res.windowHeight - 146,//待调整
+              top: res.windowHeight - 146,
               width: 40,
               height: 40
             },
@@ -943,123 +1018,25 @@ Page({
       }
     })
   },
-  // ***********************************************作业区域设置*************************************************
+  // ***********************************************回到当前位置设置*************************************************
   //生成作业区的点，形成作业区域
   controltap: function (e) {
     var _this = this;
 
-    // var polylineLen;//存放polyline的长度
-    // polylineLen = _this.data.polyline.length;//点击一次长度会加1
-    if (e.controlId === 1) {//红色的定位
-      this.data.operationDisplay ? '' :
-        this.mapCtx.getCenterLocation({
-          success: function (res) {
-            var len = _this.data.operationArray.length
-            if (len <= 2) {
-              _this.data.operationArray.push({
-                longitude: res.longitude,
-                latitude: res.latitude
-              });//少于3点的时候，直接添加进去，
-
-              //2个点的，末尾位置放第一个点
-              if (len == 2) {
-                _this.data.operationArray.push(_this.data.operationArray[0])
-              }
-            } else if (len > 2) {
-
-              //大于2个点的时候，直接在倒数第二个位置放置新添加的点
-              _this.data.operationArray.splice(_this.data.operationArray.length - 1, 0, {
-                longitude: res.longitude,
-                latitude: res.latitude
-              })
-            }
-
-
-
-            _this.data.polyline[_this.data.polylineAllLength] = {
-              points: _this.data.operationArray,
-              color: "#FF0000DD",
-              width: 2,
-              dottedLine: false
-            }
-            _this.setData({
-              operationArray: _this.data.operationArray,
-              polyline: _this.data.polyline
-
-            })
-
-          }
-
-        })
-
-    } else if (e.controlId === 2) {
+    if (e.controlId === 2) {
       this.mapCtx.moveToLocation();
       this.changeCircleLocationColor();
     }
   },
-  setOperationArea: function () {
-    var _this = this;
-    // _this.setData({
-    //     operationDisplay:0,
-    // })
-    wx.showModal({
-      title: '提示',
-      content: '点击屏幕中央的红色定位按钮，并按照顺时针方向设置作业区',
-      showCancel: false,
-      success: function () {
-        _this.setData({
-          operationDisplay: 0,
-        })
-      }
-    })
-  },
-  // *****************************************重新设置作业区**************************************************
-  reSetOperationArea: function () {
-    this.setData({
-      operationArray: [],
-      polyline: [],
-      allOperationArray: [],
-      polylineAllLength: 0
-    })
-  },
+
   setHeadingAngleAndWidth: function () {
     this.setData({
       mapViewDisplay: 0,
       operateViewDisplay: 0,
       setOperateWidthViewDisplay: 1,
     })
-    //this.generateNavLine();
-    //异步处理，设置新生成的航线可能没重新渲染完毕
-    //setTimeout(this.startNavigation,500);
-    //this.startNavigation();
+    
   },
-  setOperateWidth: function (e) {
-    this.setData({
-      operateWidth: parseInt(e.detail.value),
-    })
-  },
-  setHeadingAngle: function (e) {
-    this.setData({
-      headingAngle: parseInt(e.detail.value),
-    })
-  },
-  finishSetOperateWidthView: function () {
-    var _this = this;
-    _this.setData({
-      mapViewDisplay: 1,
-      operateViewDisplay: 1,
-      setOperateWidthViewDisplay: 0,
-      navViewDisplay: 0,
-      dataDisabled: 0,
-      nextDisabled: 1
-    })
-    _this.generateNavLine();
-    _this.data.polylineAllLength = _this.data.polyline.length;
-
-
-
-  },
-
 
   changeCircleLocationColor: function () {
     this.data.controls[1].iconPath = '/pages/images/circle_location_green.png';
@@ -1074,94 +1051,35 @@ Page({
       })
     }, 1000);
   },
-  // ************************************************设置下一个作业区域**************************************************************
-  nextAndFinishSetOperationArea: function () {
-    var self = this;
-    var polylineLength;
-    var allOperationArrayLength;//self.data.allOperationArray.length;
-    self.data.allOperationArray.push({
-      areaArray: self.data.operationArray,
-      flag: 0
-    });
-    wx.showModal({
-      title: '提示',
-      content: '是否设置下一个作业区域',
-      success: function (res) {
-        if (res.confirm) {
-          self.setData({
-            mapViewDisplay: 1,
-            operateViewDisplay: 1,
-            setOperateWidthViewDisplay: 0,
-            navViewDisplay: 0,
-            nextDisabled: 0,
-            dataDisabled: 1
 
-          })
-
-          allOperationArrayLength = self.data.allOperationArray.length;
-
-          polylineLength = self.data.polyline.length;
-
-
-          self.data.operationArray = [];
-          self.setData({
-            // operationArray: _this.data.operationArray,
-            operationArray: self.data.operationArray,
-            allOperationArray: self.data.allOperationArray,
-            polyline: self.data.polyline
-          })
-
-        } else if (res.cancel) {
-          wx.showModal({
-            title: '提示',
-            content: '是否结束设置作业区域',
-            success: function (res) {
-              if (res.confirm) {
-                // console.log('导航')//回到开始导航的页面
-                self.setData({
-                  mapViewDisplay: 1,
-                  operateViewDisplay: 0,
-                  setOperateWidthViewDisplay: 0,
-                  navViewDisplay: 1,
-                  aircraftToNavIndexInPolyline: self.data.polyline.length
-                })
-
-                for (var i = 0; i < self.data.polyline.length; i++) {
-                  if (self.data.polyline[i].points.length > 3) {//作业区
-                    for (var j = 0; j < self.data.polyline[i].points.length; j++)
-                      console.log("self.data.polyline[i].points" + "[" + i + "]" + self.data.polyline[i].points[j].latitude + "self.data.polyline[i].points" + self.data.polyline[i].points[j].longitude)
-                  }
-
-                }
-
-              } else if (res.cancel) {
-                console.log('回到作业区页面')//如果用户点击取消，回到设置作业区域的页面
-              }
-            }
-          })
-        }
-      }
-    })
-  },
 
   startNavigation: function () {
 
     this.data.allOperationAreaInPolyline = [];
-
-    for (var i = 0, index = 0; i < this.data.polyline.length; i++) {
+    // this.data.aircraftToNavIndexInPolyline = this.data.polyline.length;
+    console.log("6666666666666666"+this.data.polyline.length);
+    this.data.aircraftPointArrayInPolylineIndex = this.data.polyline.length + 1;
+    for (var i = 0; i < this.data.polyline.length; i++) {
       if (this.data.polyline[i].points.length > 3) {//作业区
-        this.data.allOperationAreaInPolyline.push(this.data.allOperationArray[index]);
-        index++;
+        this.data.allOperationAreaInPolyline.push({
+          areaArray: this.data.polyline[i].points,
+          flag: 0
+        });
+
       } else {//航线
         this.data.allOperationAreaInPolyline.push(-1);
       }
 
     }
 
-
+    this.setData({
+      startDisabled: 0,//开始按钮
+      pauseDisabled: 1,//暂停按钮
+      finishDisabled: 1,//结束按钮
+    })
 
     // console.log("startNavigation" + this.data.aircraftToNavIndexInPolyline);
-    this.data.startNavigationTimer = setInterval(this.getLiveLocation, 500)
+    this.data.startNavigationTimer = setInterval(this.getLiveLocation, 200)
   },
   getLiveLocation: function () {
 
@@ -1169,7 +1087,13 @@ Page({
       this.data.navOneAreaing = 1
       //判断是否还有区域没有 导航
       if (getJudgmentAreaFlag(this.data.allOperationAreaInPolyline, this.data.aircraftToNavIndexInPolyline)) {
-
+        
+/****************************************************为什么navPoints的值一直包括上次的数据*****************************************/
+        this.data.navPoints = [];//当前区域导航的时候，要飞的航线的顺序集合
+        this.setData({
+          navPoints: this.data.navPoints,
+        })
+        
         var aircraftPosition = this.data.liveLocation;//飞机所在的位置
 
         //  要导航区域的索引
@@ -1191,7 +1115,7 @@ Page({
 
 
 
-        this.data.navPoints = [];//当前区域导航的时候，要飞的航线的顺序集合
+        
 
         /****************************************找到飞机实际飞行应该经过的点，也就是跳转的点*********************************************/
         if (shortestLine.lineIndex == navAreaStartPosition + 1) {
@@ -1279,13 +1203,14 @@ Page({
           }
         }
 
+        console.log(" this.data.navPoints.length" + this.data.navPoints.length);
         this.data.polyline[this.data.aircraftToNavIndexInPolyline] = {
           points: [aircraftPosition, this.data.navPoints[this.data.navIndex]],
-          color: "#128612",
+          color: "#0618EF",
           width: 2,
           dottedLine: false,
         }
-
+        
         this.setData({
           polyline: this.data.polyline,
           currentAreaStartPosition: navAreaStartPosition,
@@ -1300,14 +1225,14 @@ Page({
       // this.navOneAreaing = 0
       var _this = this;
       // wayPointsArray: fileData.mtData().list,//存放测试航点的数组
-        // wayPointIndex:0//存放当前应该经过航点的坐标
-        //如果运行完以后，就结束导航
-      if (_this.data.wayPointIndex == (_this.data.wayPointsArray.length - 1) && _this.data.wayPointSubIndex == (_this.data.wayPointsArray[_this.data.wayPointsArray.length - 1].length-1)){
-        _this.finishNavigation ();
-        
+      // wayPointIndex:0//存放当前应该经过航点的坐标
+      //如果运行完以后，就结束导航
+      if (_this.data.wayPointIndex == (_this.data.wayPointsArray.length - 1) && _this.data.wayPointSubIndex == (_this.data.wayPointsArray[_this.data.wayPointsArray.length - 1].length - 1)) {
+        _this.finishNavigation();
+
       }
-      if (_this.data.wayPointsArray[_this.data.wayPointIndex] != null ){
-        if (_this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex] == null){  
+      if (_this.data.wayPointsArray[_this.data.wayPointIndex] != null) {
+        if (_this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex] == null) {
           _this.data.wayPointIndex++;
           _this.data.wayPointSubIndex = 0;
           // _this.data.navigationDot = [];
@@ -1323,137 +1248,94 @@ Page({
           latitude: _this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex].latitude
         });//将飞机飞行经过的点存放在navigationDot数组中
 
+
+        //指向下一个即将经过的导航点
+          if ((_this.data.navIndex > (_this.data.currentAreaEndPosition - _this.data.currentAreaStartPosition) * 2) && (ComputeSpacialDistance(
+            _this.data.liveLocation.latitude,
+            _this.data.liveLocation.longitude,
+            _this.data.navPoints[_this.data.navPoints.length - 1].latitude,
+            _this.data.navPoints[_this.data.navPoints.length - 1].longitude,
+            _this.data.vRadius)) < 50) {
+            _this.data.navOneAreaing = 0;
+            _this.data.navIndex = 0;
+            _this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag = 1 // 将当前作业区设置为1
+            console.log("_this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag" + _this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag);
+            for (var i = _this.data.currentAreaStartPosition - 1; i <= _this.data.currentAreaEndPosition; i++) {
+              _this.data.polyline[i].color = "#999999";
+            }
+
+          } else {
+
+            var len = ComputeSpacialDistance(
+              _this.data.liveLocation.latitude,
+              _this.data.liveLocation.longitude,
+              _this.data.navPoints[_this.data.navIndex].latitude,
+              _this.data.navPoints[_this.data.navIndex].longitude,
+              _this.data.vRadius);
+
+            //距离小于10m时，自动导航到下一个点
+            if (len <= 50) {
+              _this.data.navIndex++;
+            }
+
+            _this.data.polyline[_this.data.aircraftToNavIndexInPolyline] = {
+              points: [_this.data.liveLocation, _this.data.navPoints[_this.data.navIndex]], //_this.data.liveLocation, navPoints[navIndex]
+              color: "#0618EF",
+              width: 2,
+              dottedLine: false,
+            }
+
+          }
+
+        _this.data.polyline[this.data.aircraftPointArrayInPolylineIndex] = {
+          points: _this.data.navigationDot,
+          color: "#128612",
+          width: 10,
+          dottedLine: false,
+        }
         //存航点
         var navigationLastDot;//navigationDot数组中的最后一个点
-        if (_this.data.polyline[_this.data.polyline.length - 1].points.length > 500) {
+        if (_this.data.polyline[this.data.aircraftPointArrayInPolylineIndex].points.length > 500) {
           _this.data.allNavigationDot = _this.data.allNavigationDot.concat(_this.data.navigationDot);
           // 放到 + 1的时候，前面的navigationDot数据就不用写进 + 1位置了，所以就清空了，把navigationDot的最后一个数据写进去 + 1位置，是为了让polyline相连，不至于断一节
           navigationLastDot = _this.data.navigationDot[_this.data.navigationDot.length - 1];
           _this.data.navigationDot = [];
           _this.data.navigationDot.push({
-            latitude:navigationLastDot.latitude,
+            latitude: navigationLastDot.latitude,
             longitude: navigationLastDot.longitude
-            });
-          _this.data.polyline[_this.data.polyline.length] = {
+          });
+          _this.data.aircraftPointArrayInPolylineIndex = _this.data.aircraftPointArrayInPolylineIndex+1;
+          _this.data.polyline[_this.data.aircraftPointArrayInPolylineIndex] = {
             points: _this.data.navigationDot,
             color: "#128612",
-            width: 2,
+            width: 10,
             dottedLine: false,
           }
-          // console.log("我运行到这一步了");
-        }else{
-          _this.data.polyline[_this.data.polyline.length - 1] = {
-            points: _this.data.navigationDot,
-            color: "#128612",
-            width: 2,
-            dottedLine: false,
-          }
+
         }
-              
+       
         _this.setData({
           polyline: _this.data.polyline,
           liveLocation: _this.data.liveLocation,
           navigationDot: _this.data.navigationDot
         })
         _this.data.wayPointSubIndex++;
-       
-      }else{
+
+      } else {
         clearInterval(this.data.startNavigationTimer);
       }
-      // wx.getLocation({
-      //   type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
-      //   success: function (res) {
-      //     _this.data.liveLocation = {
-      //       latitude: res.latitude,
-      //       longitude: res.longitude,
-      //     };
-
-      //     _this.data.navigationDot.push({
-      //       longitude: res.longitude,
-      //       latitude: res.latitude
-      //     });//将飞机飞行经过的点存放在navigationDot数组中
-
-
-      //     if ((_this.data.navIndex > (_this.data.currentAreaEndPosition - _this.data.currentAreaStartPosition) * 2) && (ComputeSpacialDistance(
-      //       res.latitude,
-      //       res.longitude,
-      //       _this.data.navPoints[_this.data.navPoints.length - 1].latitude,
-      //       _this.data.navPoints[_this.data.navPoints.length - 1].longitude,
-      //       _this.data.vRadius)) < 1000) {
-      //       _this.data.navOneAreaing = 0;
-      //       _this.data.navIndex = 0;
-      //       _this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag = 1 // 将当前作业区设置为1
-      //       for (var i = _this.data.currentAreaStartPosition - 1; i <= _this.data.currentAreaEndPosition; i++) {
-      //         _this.data.polyline[i].color = "#999999";
-      //       }
-
-      //     } else {
-
-      //       var len = ComputeSpacialDistance(
-      //         _this.data.liveLocation.latitude,
-      //         _this.data.liveLocation.longitude,
-      //         _this.data.navPoints[_this.data.navIndex].latitude,
-      //         _this.data.navPoints[_this.data.navIndex].longitude,
-      //         _this.data.vRadius);
-
-      //       //距离小于10m时，自动导航到下一个点
-      //       if (len <= 1000) {
-      //         _this.data.navIndex++;
-      //       }
-
-      //       _this.data.polyline[_this.data.aircraftToNavIndexInPolyline] = {
-      //         points: [_this.data.liveLocation, _this.data.navPoints[_this.data.navIndex]], //_this.data.liveLocation, navPoints[navIndex]
-      //         color: "#128612",
-      //         width: 2,
-      //         dottedLine: false,
-      //       }
-
-      //     }
-
-      //     //存航点
-      //     _this.data.polyline[_this.data.aircraftToNavIndexInPolyline + 1] = {
-      //       points: _this.data.navigationDot,
-      //       color: "#128612",
-      //       width: 2,
-      //       dottedLine: false,
-      //     }
-
-      //     console.log("_this.data.navigationDot" + _this.data.polyline.length);
-      //     // if (_this.data.polyline.length == _this.data.aircraftToNavIndexInPolyline + 1){
-
-      //     //   _this.data.polyline[_this.data.polyline.length] = {
-      //     //     points: _this.data.navigationDot,
-      //     //     color: "#128612",
-      //     //     width: 2,
-      //     //     dottedLine: false,
-      //     //   }
-
-      //     // }else{
-
-      //     //   _this.data.polyline[_this.data.polyline.length - 1] = {
-      //     //     points: _this.data.navigationDot,
-      //     //     color: "#128612",
-      //     //     width: 2,
-      //     //     dottedLine: false,
-      //     //   }
-
-      //     // }
-
-
-      //     _this.setData({
-      //       polyline: _this.data.polyline,
-      //       liveLocation: _this.data.liveLocation,
-      //       navigationDot: _this.data.navigationDot
-      //     })
-
-      //   }
-      // })
+      
     }
   },
   pauseNavigation: function () {
     clearInterval(this.data.startNavigationTimer);
     this.setData({
-      aircraftToNavIndexInPolyline: this.data.polyline.length - 2
+      aircraftToNavIndexInPolyline: this.data.polyline.length - 2,
+
+      startDisabled: 1,//开始按钮
+      pauseDisabled: 0,//暂停按钮
+      finishDisabled: 1,//结束按钮
+      
     })
   },
   finishNavigation: function () {
@@ -1477,6 +1359,11 @@ Page({
               content: '导航结束',
               showCancel: false,
             })
+            _this.setData({
+              startDisabled: 0,//开始按钮
+              pauseDisabled: 0,//暂停按钮
+              finishDisabled :0,//结束按钮
+            })
           } else if (res.cancel) {
             // var _this = this;
             wx.showModal({
@@ -1485,7 +1372,12 @@ Page({
               showCancel: false,
               success(res) {
                 _this.setData({
-                  aircraftToNavIndexInPolyline: _this.data.polyline.length - 2
+                  aircraftToNavIndexInPolyline: _this.data.polyline.length - 2,
+                  startDisabled: 1,//开始按钮
+                  pauseDisabled: 0,//暂停按钮
+                  finishDisabled: 0,//结束按钮
+
+                
                 })
               }
             })
@@ -1495,6 +1387,8 @@ Page({
     }
 
   },
+
+
 
   //找到离出发点最近的航线，以及该航线上离出发点最近的点。startPoint:飞机当前的位置，polyline：整个polyline数组；areaStartPostion：当前作业区域在polyline数组中的坐标，areaEndPosition：当前作业区域最后一条航线在polyline数组中的坐标,vRadius地球半径
   findLatelyNavLine: function (startPoint, polyline, areaStartPostion, areaEndPosition, vRadius) {
@@ -1531,16 +1425,35 @@ Page({
     }
 
   },
+
+
+
   //**************************************************生成航线****************************************
   generateNavLine: function () {
-    // var _this = this;
 
-    // var weiduMinPoint, jingduMinPoint;
-    var headingAngle = this.data.headingAngle < 0 ? this.data.headingAngle + 180 : this.data.headingAngle;
     var copyOperationArray = JSON.parse(JSON.stringify(this.data.operationArray));//当前作业区
-    var length = copyOperationArray.length - 1;
+    var longetside;//当前作业区最长边
+    longetside = getLongestSide(copyOperationArray);
+    // var headingAngle = GetAzimuth(longetside.firstDot.latitude, longetside.firstDot.longitude, longetside.secondDot.latitude, longetside.secondDot.longitude);
+    //  var headingAngle = 169;
+    var headingAngle = copyOperationArray[copyOperationArray.length - 1].headingAngle;
+    var operateWidth = copyOperationArray[copyOperationArray.length - 1].operateWidth;
+    // this.data.headingAngle < 0 ? this.data.headingAngle + 180 : this.data.headingAngle;
+
+    var length = copyOperationArray.length - 2;
     var cutpoint = [];//最边界的切点，两个切点包围一个作业区域
-    cutpoint = getEdgeCutPoint(this.data.polyline[this.data.polyline.length - 1].points, headingAngle);
+    // cutpoint = getEdgeCutPoint(this.data.polyline[this.data.polyline.length - 1].points, headingAngle);
+    //这是正确的计算方式，但是为了测试，修改了cutpoint，后续应该改过来
+    // cutpoint.push(longetside.firstDot);
+    // cutpoint.push(longetside.secondDot);
+    cutpoint.push(copyOperationArray[copyOperationArray.length - 2]);
+    cutpoint.push(copyOperationArray[copyOperationArray.length - 2]);
+    // cutpoint.push({
+    //   latitude: 46.12579712418785, longitude: 123.80705816114897
+    // });
+    // cutpoint.push({
+    //   latitude: 46.12075881433827, longitude: 123.808443362397
+    // });
     var cutPointInLine = [];//存放切线线段的两个端点
     var longestDistance = getLongestDistance(copyOperationArray);//当前作业区域最长距离
 
@@ -1548,8 +1461,8 @@ Page({
     cutPointInLine.push(computeOffset(cutpoint[0].latitude, cutpoint[0].longitude, longestDistance, headingAngle));
 
     var basePointOffsetArray = [];
-    basePointOffsetArray.push(computeOffset(cutPointInLine[0].latitude, cutPointInLine[0].longitude, this.data.operateWidth / 2, headingAngle + 90));
-    basePointOffsetArray.push(computeOffset(cutPointInLine[1].latitude, cutPointInLine[1].longitude, this.data.operateWidth / 2, headingAngle + 90));
+    basePointOffsetArray.push(computeOffset(cutPointInLine[0].latitude, cutPointInLine[0].longitude, operateWidth / 2, headingAngle + 90));
+    basePointOffsetArray.push(computeOffset(cutPointInLine[1].latitude, cutPointInLine[1].longitude, operateWidth / 2, headingAngle + 90));
 
 
     var crossPoints = [];
@@ -1576,8 +1489,8 @@ Page({
 
         //根据偏移点求偏移点，偏移量是幅宽
         // basePointOffsetArray = [];
-        basePointOffsetArray[0] = computeOffset(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, this.data.operateWidth, headingAngle + 90);
-        basePointOffsetArray[1] = computeOffset(basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operateWidth, headingAngle + 90);
+        basePointOffsetArray[0] = computeOffset(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, operateWidth, headingAngle + 90);
+        basePointOffsetArray[1] = computeOffset(basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, operateWidth, headingAngle + 90);
 
 
         for (var i = 0; i < length; i++) {
@@ -1594,8 +1507,8 @@ Page({
     } else {
 
       basePointOffsetArray = [];
-      basePointOffsetArray.push(computeOffset(cutPointInLine[0].latitude, cutPointInLine[0].longitude, this.data.operateWidth / 2, headingAngle - 90));
-      basePointOffsetArray.push(computeOffset(cutPointInLine[1].latitude, cutPointInLine[1].longitude, this.data.operateWidth / 2, headingAngle - 90));
+      basePointOffsetArray.push(computeOffset(cutPointInLine[0].latitude, cutPointInLine[0].longitude, operateWidth / 2, headingAngle - 90));
+      basePointOffsetArray.push(computeOffset(cutPointInLine[1].latitude, cutPointInLine[1].longitude, operateWidth / 2, headingAngle - 90));
 
       crossPoints = [];
       tempCrossPointArray = [];
@@ -1620,8 +1533,9 @@ Page({
 
         //根据偏移点求偏移点，偏移量是幅宽
         // basePointOffsetArray = [];
-        basePointOffsetArray[0] = computeOffset(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, this.data.operateWidth, headingAngle - 90);
-        basePointOffsetArray[1] = computeOffset(basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, this.data.operateWidth, headingAngle - 90);
+        // 幅宽：this.data.totalOperationArea[this.data.totalOperationArea.length - 1][0].operateWidth
+        basePointOffsetArray[0] = computeOffset(basePointOffsetArray[0].latitude, basePointOffsetArray[0].longitude, operateWidth, headingAngle - 90);
+        basePointOffsetArray[1] = computeOffset(basePointOffsetArray[1].latitude, basePointOffsetArray[1].longitude, operateWidth, headingAngle - 90);
 
 
         for (var i = 0; i < length; i++) {
@@ -1656,7 +1570,4 @@ Page({
     })
 
   },
-
-
-
 })
