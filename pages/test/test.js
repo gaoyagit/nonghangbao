@@ -1232,63 +1232,63 @@ Page({
       }
     } else {
       // this.navOneAreaing = 0
-      var _this = this;
+
       // wayPointsArray: fileData.mtData().list,//存放测试航点的数组
       // wayPointIndex:0//存放当前应该经过航点的坐标
       //如果运行完以后，就结束导航
-      if (_this.data.wayPointIndex == (_this.data.wayPointsArray.length - 1) && _this.data.wayPointSubIndex == (_this.data.wayPointsArray[_this.data.wayPointsArray.length - 1].length - 1)) {
-        _this.finishNavigation();
+      if (this.data.wayPointIndex == (this.data.wayPointsArray.length - 1) && this.data.wayPointSubIndex == (this.data.wayPointsArray[this.data.wayPointsArray.length - 1].length - 1)) {
+        this.finishNavigation();
 
       }
-      if (_this.data.wayPointsArray[_this.data.wayPointIndex] != null) {
-        if (_this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex] == null) {
-          _this.data.wayPointIndex++;
-          _this.data.wayPointSubIndex = 0;
-          // _this.data.navigationDot = [];
+      if (this.data.wayPointsArray[this.data.wayPointIndex] != null) {
+        if (this.data.wayPointsArray[this.data.wayPointIndex][this.data.wayPointSubIndex] == null) {
+          this.data.wayPointIndex++;
+          this.data.wayPointSubIndex = 0;
+          // this.data.navigationDot = [];
           // console.log("我运行到这一步了");
         }
-        _this.data.liveLocation = {
-          latitude: _this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex].latitude,
-          longitude: _this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex].longitude,
+        this.data.liveLocation = {
+          latitude: this.data.wayPointsArray[this.data.wayPointIndex][this.data.wayPointSubIndex].latitude,
+          longitude: this.data.wayPointsArray[this.data.wayPointIndex][this.data.wayPointSubIndex].longitude,
         };
 
-        _this.data.navigationDot.push({
-          longitude: _this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex].longitude,
-          latitude: _this.data.wayPointsArray[_this.data.wayPointIndex][_this.data.wayPointSubIndex].latitude
+        this.data.navigationDot.push({
+          longitude: this.data.wayPointsArray[this.data.wayPointIndex][this.data.wayPointSubIndex].longitude,
+          latitude: this.data.wayPointsArray[this.data.wayPointIndex][this.data.wayPointSubIndex].latitude
         });//将飞机飞行经过的点存放在navigationDot数组中
 
 
         //指向下一个即将经过的导航点
-          if ((_this.data.navIndex > (_this.data.currentAreaEndPosition - _this.data.currentAreaStartPosition) * 2) && (ComputeSpacialDistance(
-            _this.data.liveLocation.latitude,
-            _this.data.liveLocation.longitude,
-            _this.data.navPoints[_this.data.navPoints.length - 1].latitude,
-            _this.data.navPoints[_this.data.navPoints.length - 1].longitude,
-            _this.data.vRadius)) < 100) {
-            _this.data.navOneAreaing = 0;
-            _this.data.navIndex = 0;
-            _this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag = 1 // 将当前作业区设置为1
-            console.log("_this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag" + _this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag);
-            for (var i = _this.data.currentAreaStartPosition - 1; i <= _this.data.currentAreaEndPosition; i++) {
-              _this.data.polyline[i].color = "#999999";
+          if ((this.data.navIndex > (this.data.currentAreaEndPosition - this.data.currentAreaStartPosition) * 2) && (ComputeSpacialDistance(
+            this.data.liveLocation.latitude,
+            this.data.liveLocation.longitude,
+            this.data.navPoints[this.data.navPoints.length - 1].latitude,
+            this.data.navPoints[this.data.navPoints.length - 1].longitude,
+            this.data.vRadius)) < 100) {
+            this.data.navOneAreaing = 0;
+            this.data.navIndex = 0;
+            this.data.allOperationAreaInPolyline[this.data.currentAreaStartPosition - 1].flag = 1 // 将当前作业区设置为1
+            console.log("this.data.allOperationAreaInPolyline[this.data.currentAreaStartPosition - 1].flag" + this.data.allOperationAreaInPolyline[this.data.currentAreaStartPosition - 1].flag);
+            for (var i = this.data.currentAreaStartPosition - 1; i <= this.data.currentAreaEndPosition; i++) {
+              this.data.polyline[i].color = "#999999";
             }
 
           } else {
 
             var len = ComputeSpacialDistance(
-              _this.data.liveLocation.latitude,
-              _this.data.liveLocation.longitude,
-              _this.data.navPoints[_this.data.navIndex].latitude,
-              _this.data.navPoints[_this.data.navIndex].longitude,
-              _this.data.vRadius);
+              this.data.liveLocation.latitude,
+              this.data.liveLocation.longitude,
+              this.data.navPoints[this.data.navIndex].latitude,
+              this.data.navPoints[this.data.navIndex].longitude,
+              this.data.vRadius);
 
             //距离小于10m时，自动导航到下一个点
             if (len <= 100) {
-              _this.data.navIndex++;
+              this.data.navIndex++;
             }
 
-            _this.data.polyline[_this.data.aircraftToNavIndexInPolyline] = {
-              points: [_this.data.liveLocation, _this.data.navPoints[_this.data.navIndex]], //_this.data.liveLocation, navPoints[navIndex]
+            this.data.polyline[this.data.aircraftToNavIndexInPolyline] = {
+              points: [this.data.liveLocation, this.data.navPoints[this.data.navIndex]], //this.data.liveLocation, navPoints[navIndex]
               color: "#0618EF",
               width: 2,
               dottedLine: false,
@@ -1296,26 +1296,26 @@ Page({
 
           }
 
-        _this.data.polyline[this.data.aircraftPointArrayInPolylineIndex] = {
-          points: _this.data.navigationDot,
+        this.data.polyline[this.data.aircraftPointArrayInPolylineIndex] = {
+          points: this.data.navigationDot,
           color: "#128612",
           width: 2,
           dottedLine: false,
         }
         //存航点
         var navigationLastDot;//navigationDot数组中的最后一个点
-        if (_this.data.polyline[this.data.aircraftPointArrayInPolylineIndex].points.length > 500) {
-          _this.data.allNavigationDot = _this.data.allNavigationDot.concat(_this.data.navigationDot);
+        if (this.data.polyline[this.data.aircraftPointArrayInPolylineIndex].points.length > 500) {
+          this.data.allNavigationDot = this.data.allNavigationDot.concat(this.data.navigationDot);
           // 放到 + 1的时候，前面的navigationDot数据就不用写进 + 1位置了，所以就清空了，把navigationDot的最后一个数据写进去 + 1位置，是为了让polyline相连，不至于断一节
-          navigationLastDot = _this.data.navigationDot[_this.data.navigationDot.length - 1];
-          _this.data.navigationDot = [];
-          _this.data.navigationDot.push({
+          navigationLastDot = this.data.navigationDot[this.data.navigationDot.length - 1];
+          this.data.navigationDot = [];
+          this.data.navigationDot.push({
             latitude: navigationLastDot.latitude,
             longitude: navigationLastDot.longitude
           });
-          _this.data.aircraftPointArrayInPolylineIndex = _this.data.aircraftPointArrayInPolylineIndex+1;
-          _this.data.polyline[_this.data.aircraftPointArrayInPolylineIndex] = {
-            points: _this.data.navigationDot,
+          this.data.aircraftPointArrayInPolylineIndex = this.data.aircraftPointArrayInPolylineIndex+1;
+          this.data.polyline[this.data.aircraftPointArrayInPolylineIndex] = {
+            points: this.data.navigationDot,
             color: "#128612",
             width: 10,
             dottedLine: false,
@@ -1323,12 +1323,12 @@ Page({
 
         }
        
-        _this.setData({
-          polyline: _this.data.polyline,
-          liveLocation: _this.data.liveLocation,
-          navigationDot: _this.data.navigationDot
+        this.setData({
+          polyline: this.data.polyline,
+          liveLocation: this.data.liveLocation,
+          navigationDot: this.data.navigationDot
         })
-        _this.data.wayPointSubIndex++;
+        this.data.wayPointSubIndex++;
 
       } else {
         clearInterval(this.data.startNavigationTimer);
@@ -1385,8 +1385,6 @@ Page({
                   startDisabled: 1,//开始按钮
                   pauseDisabled: 0,//暂停按钮
                   finishDisabled: 0,//结束按钮
-
-                
                 })
               }
             })
