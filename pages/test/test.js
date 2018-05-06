@@ -619,9 +619,9 @@ function basePointFunctionTest(vLat0, vLon0, vHeading, vLat1, allPoints) {
 }
 
 //判断作业区域的所有flag，未作业的flag = 0；作业过的flag = 1，若有未作业过的区域，返回true，全部作业返回,false，aircraftToNavIndexInPolyline由于allOperationAreaInPolyline是polyline数组的再现，包括飞机作业时的航点，在polyline[polyline.length]>2,所以传进来aircraftToNavIndexInPolyline作为找作业区域的终止长度
-function getJudgmentAreaFlag(allOperationAreaInPolyline, aircraftToNavIndexInPolyline) {
+function getJudgmentAreaFlag(allOperationAreaInPolyline, indexOfAircraftToPointsInPolyline) {
 
-  var len = aircraftToNavIndexInPolyline;
+  var len = indexOfAircraftToPointsInPolyline;
   for (var i = 0; i < len; i++) {
     if (allOperationAreaInPolyline[i] != -1 && allOperationAreaInPolyline[i].flag == 0) {
       return true;
@@ -904,7 +904,7 @@ Page({
     
     startNavigationTimer: null,
 
-    aircraftToNavIndexInPolyline: -1,//飞机与导航点的连线在polyline中的位置
+    indexOfAircraftToPointsInPolyline: -1,//飞机与导航点的连线在polyline中的位置
     navOneAreaing: 0, //判断是否在导航一个区域，
     allOperationAreaInPolyline: [], //和polyline中的索引一一对应，航线的位置填-1
     navPoints: [],//每一次导航的时候，要飞航线点的顺序集合
@@ -970,11 +970,11 @@ Page({
 
     _this.setData({
       polyline: _this.data.polyline,
-      aircraftToNavIndexInPolyline: _this.data.polyline.length,
+      indexOfAircraftToPointsInPolyline: _this.data.polyline.length,
       tempPolyline:_this.data.polyline,
       
     })
-    console.log("aircraftToNavIndexInPolyline" + _this.data.aircraftToNavIndexInPolyline);
+    console.log("indexOfAircraftToPointsInPolyline" + _this.data.indexOfAircraftToPointsInPolyline);
 
     wx.getLocation({
       success: function (res) {
@@ -1061,7 +1061,7 @@ Page({
   startNavigation: function () {
 
     this.data.allOperationAreaInPolyline = [];
-    // this.data.aircraftToNavIndexInPolyline = this.data.polyline.length;
+    // this.data.indexOfAircraftToPointsInPolyline = this.data.polyline.length;
     console.log("6666666666666666"+this.data.polyline.length);
     this.data.aircraftPointArrayInPolylineIndex = this.data.polyline.length + 1;
     for (var i = 0; i < this.data.polyline.length; i++) {
@@ -1086,7 +1086,7 @@ Page({
       finishDisabled: 1,//结束按钮
     })
 
-    // console.log("startNavigation" + this.data.aircraftToNavIndexInPolyline);
+    // console.log("startNavigation" + this.data.indexOfAircraftToPointsInPolyline);
     this.data.startNavigationTimer = setInterval(this.getLiveLocation, 200)
   },
   getLiveLocation: function () {
@@ -1094,9 +1094,9 @@ Page({
     if (!this.data.navOneAreaing) {//是否在导航一个区域。如果没有，那就寻找下一个导航区域
       this.data.navOneAreaing = 1
       //判断是否还有区域没有 导航
-      if (getJudgmentAreaFlag(this.data.allOperationAreaInPolyline, this.data.aircraftToNavIndexInPolyline)) {
+      if (getJudgmentAreaFlag(this.data.allOperationAreaInPolyline, this.data.indexOfAircraftToPointsInPolyline)) {
         
-/****************************************************为什么navPoints的值一直包括上次的数据*****************************************/
+        /**********为什么navPoints的值一直包括上次的数据*****/
         this.data.navPoints = [];//当前区域导航的时候，要飞的航线的顺序集合
         this.setData({
           navPoints: this.data.navPoints,
@@ -1126,7 +1126,7 @@ Page({
 
         
 
-        /****************************************找到飞机实际飞行应该经过的点，也就是跳转的点*********************************************/
+        /*************找到飞机实际飞行应该经过的点，也就是跳转的点************/
         if (shortestLine.lineIndex == navAreaStartPosition) {
           for (var i = navAreaStartPosition; i < (navAreaEndPosition + 1); i++) {
 
@@ -1213,7 +1213,7 @@ Page({
         }
 
         console.log(" this.data.navPoints.length" + this.data.navPoints.length);
-        this.data.polyline[this.data.aircraftToNavIndexInPolyline] = {
+        this.data.polyline[this.data.indexOfAircraftToPointsInPolyline] = {
           points: [aircraftPosition, this.data.navPoints[this.data.navIndex]],
           color: "#0618EF",
           width: 2,
@@ -1287,7 +1287,7 @@ Page({
               this.data.navIndex++;
             }
 
-            this.data.polyline[this.data.aircraftToNavIndexInPolyline] = {
+            this.data.polyline[this.data.indexOfAircraftToPointsInPolyline] = {
               points: [this.data.liveLocation, this.data.navPoints[this.data.navIndex]], //this.data.liveLocation, navPoints[navIndex]
               color: "#0618EF",
               width: 2,
@@ -1339,7 +1339,7 @@ Page({
   pauseNavigation: function () {
     clearInterval(this.data.startNavigationTimer);
     this.setData({
-      aircraftToNavIndexInPolyline: this.data.polyline.length - 2,
+      indexOfAircraftToPointsInPolyline: this.data.polyline.length - 2,
 
       startDisabled: 1,//开始按钮
       pauseDisabled: 0,//暂停按钮
@@ -1351,7 +1351,7 @@ Page({
     var _this = this;
     clearInterval(this.data.startNavigationTimer);
 
-    if (!getJudgmentAreaFlag(this.data.allOperationAreaInPolyline, this.data.aircraftToNavIndexInPolyline)) {
+    if (!getJudgmentAreaFlag(this.data.allOperationAreaInPolyline, this.data.indexOfAircraftToPointsInPolyline)) {
       wx.showModal({
         title: '提示',
         content: '导航结束',
@@ -1381,7 +1381,7 @@ Page({
               showCancel: false,
               success(res) {
                 _this.setData({
-                  aircraftToNavIndexInPolyline: _this.data.polyline.length - 2,
+                  indexOfAircraftToPointsInPolyline: _this.data.polyline.length - 2,
                   startDisabled: 1,//开始按钮
                   pauseDisabled: 0,//暂停按钮
                   finishDisabled: 0,//结束按钮
