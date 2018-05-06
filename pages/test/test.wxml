@@ -51,7 +51,7 @@
             <button type="warn"
                     style="width: 30%;float:left; };"
                     bindtap="finishNavigation" size="default"
-                    disabled = "{{!finishDisabled ? true:false}}
+                    disabled = "{{!finishDisabled ? true:false}}"
             >结束</button>
     </view>
 </view>

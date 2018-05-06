@@ -921,6 +921,7 @@ Page({
     startDisabled:1,//开始按钮
     pauseDisabled:0,//暂停按钮
     finishDisabled:0,//结束按钮
+      isClickPauseButton:0,//是否点击了暂停按钮,
 
     tempPolyline:[],//重现polyline，只有航线和作业区
   },
@@ -1060,9 +1061,19 @@ Page({
 
   startNavigation: function () {
 
+      if(this.data.isClickPauseButton){
+          this.setData({
+              isClickPauseButton:0,
+              startDisabled: 0,//开始按钮
+              pauseDisabled: 1,//暂停按钮
+              finishDisabled: 1,//结束按钮
+          })
+          this.data.startNavigationTimer = setInterval(this.getLiveLocation, 200)
+          return
+      }
     this.data.allOperationAreaInPolyline = [];
     // this.data.aircraftToNavIndexInPolyline = this.data.polyline.length;
-    console.log("6666666666666666"+this.data.polyline.length);
+    //console.log("6666666666666666"+this.data.polyline.length);
     this.data.aircraftPointArrayInPolylineIndex = this.data.polyline.length + 1;
     for (var i = 0; i < this.data.polyline.length; i++) {
       if (this.data.polyline[i].points.length > 3) {//作业区
@@ -1344,7 +1355,7 @@ Page({
       startDisabled: 1,//开始按钮
       pauseDisabled: 0,//暂停按钮
       finishDisabled: 1,//结束按钮
-      
+      isClickPauseButton:1,
     })
   },
   finishNavigation: function () {
