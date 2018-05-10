@@ -1,13 +1,15 @@
 {
   "pages": [
-    "pages/receiveMap/map",
-    
-    "pages/defaultMap/map",
-    "pages/_map/map",
-    "pages/test/test",
-    
-    
+    "pages/genPlanlineInWork/finishSetBaselinemap",
     "pages/mode/mode",
+    
+    "pages/test/test",
+    "pages/selfbuiltMap/selfbuiltMap",
+    
+    
+    
+    "pages/receiveMap/receiveMap",
+    "pages/defaultMap/defaultMap",
     
     "pages/register/register",
     "pages/login/login",

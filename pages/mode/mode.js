@@ -59,17 +59,17 @@ Page({
   selfbuilt:function ()
   {
     wx.navigateTo({
-      url: '../../pages/_map/map'
+      url: '../../pages/selfbuiltMap/selfbuiltMap'
     })
   },
   receive: function () {
     wx.navigateTo({
-      url: '../../pages/receiveMap/map'
+      url: '../../pages/receiveMap/receiveMap'
     })
   },
   default: function () {
     wx.navigateTo({
-      url: '../../pages/defaultMap/map'
+      url: '../../pages/defaultMap/defaultMap'
     })
   },
   makePhoneCall:function(){

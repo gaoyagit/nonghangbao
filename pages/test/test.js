@@ -161,6 +161,25 @@ Page({
         })
       }
     })
+
+    // //请求测试
+    // wx.request({
+    //   url: 'http://123.127.160.69:8080/survey/jaxrs/surveydata/shapes', //仅为示例，并非真实的接口地址
+    //   data: {
+    //     "equipID": "qd0004",
+    //     "equipPassword": "qd0004",
+    //     "startTime": "2017-01-31 00:00:00",
+    //     "endTime": "2017-05-31 00:00:00"
+    //   },
+    //   header: {
+    //     'content-type': 'application/json' // 默认值
+    //   },
+    //   // method:GET,
+    //   // dataType:JSON,
+    //   success: function (res) {
+    //     console.log(res.data)
+    //   }
+    // })
   },
   // ***********************************************回到当前位置设置*************************************************
   //生成作业区的点，形成作业区域
@@ -447,7 +466,7 @@ Page({
         this.data.polyline[this.data.aircraftPointArrayInPolylineIndex] = {
           points: this.data.navigationDot,
           color: "#128612",
-          width: 2,
+          width: 5,
           dottedLine: false,
         }
         //存航点
@@ -465,7 +484,7 @@ Page({
           this.data.polyline[this.data.aircraftPointArrayInPolylineIndex] = {
             points: this.data.navigationDot,
             color: "#128612",
-            width: 10,
+            width: 5,
             dottedLine: false,
           }
 
@@ -487,7 +506,7 @@ Page({
   pauseNavigation: function () {
     clearInterval(this.data.startNavigationTimer);
     this.setData({
-      indexOfAircraftToPointsInPolyline: this.data.polyline.length - 2,
+      // indexOfAircraftToPointsInPolyline: this.data.polyline.length - 2,
 
       startDisabled: 1,//开始按钮
       pauseDisabled: 0,//暂停按钮

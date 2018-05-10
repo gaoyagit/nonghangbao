@@ -1,0 +1,63 @@
+
+<view class="foot" style="width: 100%;">
+
+    <view class="mapView" style="width: 100%; display:{{!mapViewDisplay?'none':'block'}};">
+        <map
+                id="map"
+                longitude="{{longitude}}"
+                latitude="{{latitude}}"
+                scale="{{scale}}"
+                controls="{{controls}}"
+                bindcontroltap="controltap"
+                markers="{{markers}}"
+                bindmarkertap="markertap"
+                polyline="{{polyline}}"
+                show-location
+                style="width: 100%; height:{{mapHeight}}px;">
+        </map>   
+    </view>
+    
+
+    <!-- 设置基线 -->
+     <view class="setBaseline" style="width: 100%; font-size:10px; display:{{!setBaselineViewDisplay?'none':'block'}};"> 
+        
+         <button type="primary"
+                style="width: 35%; float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="startSetBaseline" size="default"
+                > 开始</button>  
+          <button type="primary"
+                style="width: 35%;float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="finishSetBaseline" size="default" 
+               >结束</button> 
+           <button type="primary"
+                style="width: 30%; float:left;display:{{operationDisplay?'none':'block'}};"
+                bindtap="resetBaseline" size="default" >重置</button>       
+     </view> 
+    <!-- 向左设置导航线，或者像右设置导航线 -->
+    <view class="navView" style="width: 100%; display:{{!navViewDisplay?'none':'block'}};">
+            <button type="primary"
+                    style="width: 50%;float:left; };"
+                    bindtap="startNavigation" size="default">左</button>
+                      
+            <button type="primary"
+                    style="width: 50%;float:left; };"
+                    bindtap="finishNavigation" size="default">右</button>
+    </view>
+    <!-- 上一条辅助导航线，下一条辅助导航线 -->
+     <view class='selectPlanline' style=" width: 100%;display:{{!selectPlanlineViewDisplay?'none':'block'}};"> 
+          <button class='previousPlanline' 
+                  type='primary' 
+                  style="width: 30%;float:left;"
+                  bindtap="previousPlanline" >上一条</button>
+          <button type="warn"
+                  style="width: 40%;float:left; };"
+                  bindtap="pauseNavigation" size="default">结束导航</button>
+          <button class='nextPlanline' 
+                  type='primary' 
+                  style="width: 30%;float:left;"
+                  bindtap="nextPlanline" >下一条</button>
+    </view> 
+</view>
+
+<!-- 选择导航线 -->
+    
