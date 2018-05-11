@@ -5,6 +5,7 @@ module.exports = {
   Heading2KAndgle: Heading2KAndgle,// 将以北方向为零点的坐标方位角转化为用于表示斜率的夹角
   IsApproximateZero: IsApproximateZero,// 判断一个数是否近似为0
   computeOffset: computeOffset,//已知一个点、距离、航向角，求终点
+  getExtensionLine: getExtensionLine,//找线段的延长线
   ComputeAngle: ComputeAngle,/// 计算出角123的大小（小于180度）,已知3个点，求三个点的夹角 
   GetAzimuth: GetAzimuth,//求1到2的方位角(圆心在1上，角度制)
   ComputeSpacialDistance: ComputeSpacialDistance,/// 计算两点间的球面距离（单位为米）
@@ -104,6 +105,20 @@ function computeOffset(vLat, vLon, vDistance, vHeading) {
     latitude: Arc2Angle(Math.asin(rLatS)),
     longitude: Arc2Angle(Angle2Arc(vLon) + Math.atan2(pDAS * pLAC * Math.sin(pHArc), pDAC - pLAS * rLatS))
   }
+}
+
+//已知一条线段，找该线段的延长线
+function getExtensionLine(firstPoint, secondPoint, vDistance, vHeading){
+  var extensionLineArray = [];
+  var firstextensionLine = computeOffset(firstPoint.latitude,
+    firstPoint.longitude, vDistance, vHeading + 180);
+  var secondextensionLine = computeOffset(secondPoint.latitude,
+    secondPoint.longitude, vDistance, vHeading);
+  
+  extensionLineArray.push(firstextensionLine);
+  extensionLineArray.push(secondextensionLine);
+
+  return extensionLineArray;
 }
 
 /// 计算出角123的大小（小于180度）,已知3个点，求三个点的夹角       
