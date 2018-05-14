@@ -348,6 +348,7 @@ Page({
   //重新设置基线
   resetBaseline:function(){
     this.data.polyline = [];
+    clearInterval(this.data.startNavigationTimer);
     this.setData({
       startSetBaselineButton: 1,
       finishSetBaselineButton: 0,
