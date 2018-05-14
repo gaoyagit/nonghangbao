@@ -16,21 +16,21 @@ Page({
     // operationDisplay: 1,//控制是否显示设置作业区的按钮的选项
     allOperationArray: [],//所有作业区域的坐标点，例如allOperationArray[0]存放第一个作业区，allOperationArray[1]存放第二个作业区
     operationArray: [],//生成单个作业区的各个坐标点的数组
-    operateWidth: 0,//幅宽，也就是作业宽度
+    operateWidth: 30,//幅宽，也就是作业宽度,初始值为30米
     currentAreaStartPosition: 0,//当前工作区域在polyline中航线的起始点
     currentAreaEndPosition: 0,//当前工作区域在polyline中的航线结束点
     vRadius: 6378136.49,
 
     mapViewDisplay: 1,//地图view
-    setBaselineViewDisplay: 0,//设置基线view
+    setBaselineViewDisplay: 1,//设置基线view
     setOperateWidthViewDisplay: 0,//设置幅宽view
-    setPlainLineViewDisplay: 1,//设置向左或者向右的导航线view
+    setPlainLineViewDisplay: 0,//设置向左或者向右的导航线view
     selectPlainlineViewDisplay:0,//选择导航线
 
     //设置基线的按钮
-    startSetBaselineButton:1,
-    finishSetBaselineButton:1,
-    resetBaselineButton:1,
+    startSetBaselineButton:0,
+    finishSetBaselineButton:0,
+    resetBaselineButton:0,
 
     //设置向左飞还是向右飞的按钮
     setLeftPlainLineButton:1,
@@ -91,121 +91,96 @@ Page({
   onLoad: function () {
     var _this = this;
     this.mapCtx = wx.createMapContext('map');
-    // //设置基线，点击开始开始记录航迹，点击开始的点为基线的起始点，点击结束时的点为基线的结束点
-    // wx.showModal({
-    //   title: '提示',
-    //   content: '请设置基线', 
-    //   success(res){
-    //     _this.setData({
-    //       startSetBaselineButton: 1,
-    //       finishSetBaselineButton: 0,
-    //       resetBaselineButton: 0,
-    //     })
-    //   } 
-    // })
-    // console.log(obj.Angle2Arc(20));
-    //设置作业区域以及生成航线
-    var currentOperationArea = [];//当前作业区域
-    var longestSideArray;//存放最长边的信息
-    // var headingAngle = 0;//最长边的角度
-    var resultTest;
+    //设置基线，点击开始开始记录航迹，点击开始的点为基线的起始点，点击结束时的点为基线的结束点
+    wx.showModal({
+      title: '提示',
+      content: '请设置幅宽', 
+      showCancel: false,
+      success(res){
+        _this.setData({
+          // startSetBaselineButton: 1,
+          mapViewDisplay:0,
+          setBaselineViewDisplay:0,
+          setOperateWidthViewDisplay: 1
+        })
+      } 
+    })
 
-    var testFirstDot = {
-      latitude: 46.1258794458852, longitude: 123.807504487728
-    }
-    var testSecondDot = {
-      latitude: 46.120289377425, longitude: 123.809036698577,
-    };
-   
-    
-    // for (var i = 0; i < this.data.totalOperationArea.length; i++) {
-    //   for (var j = 0; j < this.data.totalOperationArea[i].length - 1; j++) {
-    //     currentOperationArea.push(this.data.totalOperationArea[i][j]);
-    //   }
+    // this.data.polyline[this.data.polyline.length]={
+    //   points: this.data.wayPointsArray,
+    //   color: "#FF0000DD",
+    //   width:2,
+    //   dottedLine:false
+    // }
+
+    // this.data.baselineStartPoint = {
+    //    latitude: 46.1246360206895, longitude: 123.815861216952 
+    // }
+
+    // this.data.baselineFinishPoint = {
+    //   latitude: 46.1169805905205, longitude: 123.817905188901
+    // }
+
+
+
+
+    // //根据基线的两个点找到飞机飞行的航向角
+    // this.data.headingAngle = obj.GetAzimuth(
+    //   this.data.baselineStartPoint.latitude,
+    //   this.data.baselineStartPoint.longitude,
+    //   this.data.baselineFinishPoint.latitude,
+    //   this.data.baselineFinishPoint.longitude);
+    // // function computeOffset(vLat, vLon, vDistance, vHeading) {
+    // // function getExtensionLine(firstPoint, secondPoint, vDistance, vHeading) {
+    // var extensionLine = obj.getExtensionLine(this.data.baselineStartPoint, this.data.baselineFinishPoint, 1200, this.data.headingAngle)
+    // this.data.polyline[this.data.polyline.length] = {
+    //   points: extensionLine,
+    //   color: "#1639E2",
+    //   width: 3,
+    //   dottedLine: true
+    // }
+
+    // if (this.data.polyline.length % 2 == 0){
     //   this.data.polyline[this.data.polyline.length] = {
-    //     points: currentOperationArea,
+    //     points: [],
     //     color: "#FF0000DD",
     //     width: 2,
     //     dottedLine: false
     //   }
-
-    //   currentOperationArea = [];
-    //   this.data.operationArray = this.data.totalOperationArea[i];
-    //   this.generateNavLine();
     // }
-
-    this.data.polyline[this.data.polyline.length]={
-      points: this.data.wayPointsArray,
-      color: "#FF0000DD",
-      width:2,
-      dottedLine:false
-    }
-
-    this.data.baselineStartPoint = {
-       latitude: 46.1246360206895, longitude: 123.815861216952 
-    }
-
-    this.data.baselineFinishPoint = {
-      latitude: 46.1169805905205, longitude: 123.817905188901
-    }
-    //根据基线的两个点找到飞机飞行的航向角
-    this.data.headingAngle = obj.GetAzimuth(
-      this.data.baselineStartPoint.latitude,
-      this.data.baselineStartPoint.longitude,
-      this.data.baselineFinishPoint.latitude,
-      this.data.baselineFinishPoint.longitude);
-    // function computeOffset(vLat, vLon, vDistance, vHeading) {
-    // function getExtensionLine(firstPoint, secondPoint, vDistance, vHeading) {
-    var extensionLine = obj.getExtensionLine(this.data.baselineStartPoint, this.data.baselineFinishPoint, 1200, this.data.headingAngle)
-    this.data.polyline[this.data.polyline.length] = {
-      points: extensionLine,
-      color: "#1639E2",
-      width: 3,
-      dottedLine: true
-    }
-    // console.log("this.data.polyline.length111111111:" + this.data.polyline.length);
-    if (this.data.polyline.length % 2 == 0){
-      this.data.polyline[this.data.polyline.length] = {
-        points: [],
-        color: "#FF0000DD",
-        width: 2,
-        dottedLine: false
-      }
-    }
-    // console.log("this.data.polyline.length22222222:" + this.data.polyline[2].points.length);
-    this.data.polyline[this.data.polyline.length] = {
-      points: [this.data.baselineStartPoint, this.data.baselineFinishPoint],
-      color: "#16E28D",
-      width: 3,
-      dottedLine: false
-    }
-
-    // console.log("this.data.polyline.length:"+this.data.polyline.length);
     
-    this.setData({
-      polyline: this.data.polyline,
-      indexOfAircraftToPointsInPolyline: this.data.polyline.length,
-      tempPolyline: this.data.polyline,
+    // this.data.polyline[this.data.polyline.length] = {
+    //   points: [this.data.baselineStartPoint, this.data.baselineFinishPoint],
+    //   color: "#16E28D",
+    //   width: 3,
+    //   dottedLine: false
+    // }
+    
+    // this.setData({
+    //   polyline: this.data.polyline,
+    //   indexOfAircraftToPointsInPolyline: this.data.polyline.length,
+    //   tempPolyline: this.data.polyline,
 
-    })
-    // console.log("indexOfAircraftToPointsInPolyline" + this.data.indexOfAircraftToPointsInPolyline);
-
+    // })
+    
     wx.getLocation({
       success: function (res) {
         _this.setData({
           latitude: res.latitude,
           longitude: res.longitude,
-          startPosition: {
-            latitude: res.latitude,
-            longitude: res.longitude,
-          },
-          liveLocation: {
-            latitude: res.latitude,
-            longitude: res.longitude,
-          }
+          // startPosition: {
+          //   latitude: res.latitude,
+          //   longitude: res.longitude,
+          // },
+          // liveLocation: {
+          //   latitude: res.latitude,
+          //   longitude: res.longitude,
+          // }
         })
       },
     })
+
+
     //获取屏幕信息，设置操作地图的控件
     wx.getSystemInfo({
       success: function (res) {
@@ -214,16 +189,6 @@ Page({
           mapHeight: res.windowHeight - 46,//46
           controls: [{
             id: 1,
-            iconPath: '/pages/images/location3.png',
-            position: {
-              left: res.windowWidth / 2 - 12,
-              top: res.windowHeight / 2 - 58,
-              width: 26,
-              height: 36
-            },
-            clickable: true
-          }, {
-            id: 2,
             iconPath: '/pages/images/circle_location.png',
             position: {
               left: res.windowWidth - 60,
@@ -261,18 +226,43 @@ Page({
   controltap: function (e) {
     // var _this = this;
 
-    if (e.controlId === 2) {
+    if (e.controlId === 1) {
       this.mapCtx.moveToLocation();
       this.changeCircleLocationColor();
     }
   },
+  // 设置幅宽
+  setOperateWidth: function (e) {
+    this.setData({
+      operateWidth: parseInt(e.detail.value),
+    })
+  },
+  // 设置幅宽页面的结束按钮
+  finishSetOperateWidthView: function () {
+    var _this = this;
+    wx.showModal({
+      title: '提示',
+      content: '请点击开始按钮，设置作业基线',
+      showCancel: false,
+      success: function () {
+        _this.setData({
+          mapViewDisplay: 1,
+          setOperateWidthViewDisplay: 0,
+          setBaselineViewDisplay: 1,
+          startSetBaselineButton: 1,
+        })
+      }
+    })
+    
+  },
+
   //设置基线起始的点
   startSetBaseline:function(){
     //如果点击了结束导航，但是依旧要导航
-    if (this.data.isClickFinishButton) {
-      this.data.startNavigationTimer = setInterval(this.getLiveLocation, 200)
-      return
-    }
+    // if (this.data.isClickFinishButton) {
+    //   this.data.startNavigationTimer = setInterval(this.getLiveLocation, 200)
+    //   return
+    // }
     var _this = this
     wx.getLocation({
       success: function (res) {
@@ -280,7 +270,10 @@ Page({
           baselineStartPoint: {
             latitude: res.latitude,
             longitude: res.longitude,
-          }
+          },
+          startSetBaselineButton:0,
+          finishSetBaselineButton:1,
+          resetBaselineButton:1
         })
       },
     })
@@ -303,25 +296,77 @@ Page({
       title: '设置基线',
       content: '是否重设基线',
       success(res){
+        if(res.confirm){
+          
+          _this.resetBaseline();
+          // _this.setData({
+          //   // polyline:[],
+          //   baselineFinishPoint: {},
+          //   baselineStartPoint: {},
+          // })
+        }else{
+          //根据基线的两个点找到飞机飞行的航向角
+          _this.data.headingAngle = obj.GetAzimuth(
+            _this.data.baselineStartPoint.latitude,
+            _this.data.baselineStartPoint.longitude,
+            _this.data.baselineFinishPoint.latitude,
+            _this.data.baselineFinishPoint.longitude);
+          
+          var extensionLine = obj.getExtensionLine(_this.data.baselineStartPoint, _this.data.baselineFinishPoint, 1200, _this.data.headingAngle)
+          _this.data.polyline[1] = {
+            points: extensionLine,
+            color: "#1639E2",
+            width: 3,
+            dottedLine: true
+          }
 
-      }
+          if (_this.data.polyline.length % 2 == 0){
+            _this.data.polyline[_this.data.polyline.length] = {
+              points: [],
+              color: "#FF0000DD",
+              width: 2,
+              dottedLine: false
+            }
+          }
+          _this.data.polyline[_this.data.plainlinePointer] = {
+            points: [_this.data.baselineStartPoint, _this.data.baselineFinishPoint],
+            color: "#16E28D",
+            width: 3,
+            dottedLine: false
+          }
+          _this.setData({
+            setBaselineViewDisplay:0,
+            setPlainLineViewDisplay:1,
+            polyline:_this.data.polyline,
+          })
+        }
+        
+      },
+      
     })
   },
   //重新设置基线
   resetBaseline:function(){
+    this.data.polyline = [];
     this.setData({
+      startSetBaselineButton: 1,
+      finishSetBaselineButton: 0,
+      resetBaselineButton: 0,
       baselineFinishPoint: {},
       baselineStartPoint:{},
+      polyline: this.data.polyline,
     })
+
+    console.log("this.data.polyline.length"+this.data.polyline.length);
   },
 
   //点击左，设置向左飞行的3条航线
   setLeftPlainLine:function(){  
     for(var i = 0 ;i < 3;i++){
       // this.data.baselineStartPoint, this.data.baselineFinishPoint
-      //通过一条线段的两个端点，找距离该线段50米的另外一条线的两个端点
-      var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, 50, this.data.headingAngle+90);
-      var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, 50, this.data.headingAngle+90);
+      //通过一条线段的两个端点，找距离该线段30米的另外一条线的两个端点
+      var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, this.data.operateWidth, this.data.headingAngle+90);
+      var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, this.data.operateWidth, this.data.headingAngle+90);
 
       if (this.data.polyline.length % 2 == 0) {
         this.data.polyline[this.data.polyline.length] = {
@@ -364,8 +409,8 @@ Page({
     for (var i = 0; i < 3; i++) {
       // this.data.baselineStartPoint, this.data.baselineFinishPoint
       //通过一条线段的两个端点，找距离该线段50米的另外一条线的两个端点
-      var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, 50, this.data.headingAngle - 90);
-      var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, 50, this.data.headingAngle - 90);
+      var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, this.data.operateWidth, this.data.headingAngle - 90);
+      var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, this.data.operateWidth, this.data.headingAngle - 90);
 
       if (this.data.polyline.length % 2 == 0) {
         this.data.polyline[this.data.polyline.length] = {
@@ -444,9 +489,9 @@ Page({
         //再次向左生成3条航线
         for (var i = 0; i < 3; i++) {
           // this.data.baselineStartPoint, this.data.baselineFinishPoint
-          //通过一条线段的两个端点，找距离该线段50米的另外一条线的两个端点
-          var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, 50, this.data.headingAngle + 90);
-          var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, 50, this.data.headingAngle + 90);
+          //通过一条线段的两个端点，找距离该线段this.data.operateWidth米的另外一条线的两个端点
+          var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, this.data.operateWidth, this.data.headingAngle + 90);
+          var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, this.data.operateWidth, this.data.headingAngle + 90);
 
           if (this.data.polyline.length % 2 == 0) {
             this.data.polyline[this.data.polyline.length] = {
@@ -473,9 +518,9 @@ Page({
       } else if (this.data.rightPlainLineFlag == 1){
         for (var i = 0; i < 3; i++) {
           // this.data.baselineStartPoint, this.data.baselineFinishPoint
-          //通过一条线段的两个端点，找距离该线段50米的另外一条线的两个端点
-          var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, 50, this.data.headingAngle - 90);
-          var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, 50, this.data.headingAngle - 90);
+          //通过一条线段的两个端点，找距离该线段this.data.operateWidth米的另外一条线的两个端点
+          var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, this.data.operateWidth, this.data.headingAngle - 90);
+          var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, this.data.operateWidth, this.data.headingAngle - 90);
 
           if (this.data.polyline.length % 2 == 0) {
             this.data.polyline[this.data.polyline.length] = {
@@ -537,22 +582,22 @@ Page({
 
   //回到当前位置
   changeCircleLocationColor: function () {
-    this.data.controls[1].iconPath = '/pages/images/circle_location_green.png';
+    this.data.controls[0].iconPath = '/pages/images/circle_location_green.png';
     this.setData({
       controls: this.data.controls,
     })
-    // var _this = this;
+    var _this = this;
     setTimeout(function () {
-      this.data.controls[1].iconPath = '/pages/images/circle_location.png';
-      this.setData({
-        controls: this.data.controls,
+      _this.data.controls[0].iconPath = '/pages/images/circle_location.png';
+      _this.setData({
+        controls: _this.data.controls,
       })
     }, 1000);
   },
   //结束导航
   finishNavigation: function () {
     var _this = this;
-    clearInterval(this.data.startNavigationTimer);
+    
 
       wx.showModal({
         title: '提示',
@@ -563,7 +608,8 @@ Page({
               title: '提示',
               content: '导航结束',
               showCancel: false,
-            })
+            });
+            clearInterval(_this.data.startNavigationTimer);
             _this.setData({
               previousPlainlineButton: 0,
               finishNavigationButton: 0,

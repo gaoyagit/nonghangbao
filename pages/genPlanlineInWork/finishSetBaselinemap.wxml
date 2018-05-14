@@ -16,7 +16,15 @@
                 style="width: 100%; height:{{mapHeight}}px;">
         </map>   
     </view>
-    
+
+
+    <!-- 设置幅宽的值 -->
+    <view class="setOperateWidthView" style="width: 100%; display:{{!setOperateWidthViewDisplay?'none':'block'}};">
+          <label>设置幅宽和航向角</label>
+          <input type="number" bindinput="setOperateWidth" placeholder="请在这里输入幅宽,初始值为30m"></input>
+          <button type="default" style="width: 70%;" bindtap="finishSetOperateWidthView" size="default">确定</button>
+    </view>
+
 
     <!-- 设置基线 -->
      <view class="setBaseline" style="width: 100%; font-size:10px; display:{{!setBaselineViewDisplay?'none':'block'}};"> 
@@ -37,6 +45,7 @@
                 disabled="{{!resetBaselineButton ? true:false}}
                 >重置</button>       
      </view> 
+
     <!-- 向左设置导航线，或者像右设置导航线 -->
     <view class="setPlainLine" style="width: 100%; display:{{!setPlainLineViewDisplay?'none':'block'}};">
             <button type="primary"
@@ -51,6 +60,7 @@
                     disabled="{{!setRightPlainLineButton ? true:false}}
                     >右</button>
     </view>
+
     <!-- 上一条辅助导航线，下一条辅助导航线 -->
      <view class='selectPlainline' style=" width: 100%;display:{{!selectPlainlineViewDisplay?'none':'block'}};"> 
           <button class='previousPlainline' 
@@ -72,6 +82,4 @@
                   >下一条</button>
     </view> 
 </view>
-
-<!-- 选择导航线 -->
     
