@@ -1,9 +1,10 @@
 {
   "pages": [
-    "pages/genPlanlineInWork/finishSetBaselinemap",
+    "pages/test/test",
+    "pages/genPlanlineInWork/genPlanlineInWorkmap",
     "pages/mode/mode",
     
-    "pages/test/test",
+  
     "pages/selfbuiltMap/selfbuiltMap",
     
     

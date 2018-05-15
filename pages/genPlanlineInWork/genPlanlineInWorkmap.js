@@ -277,7 +277,7 @@ Page({
         })
       },
     })
-    this.data.startNavigationTimer = setInterval(this.getLiveLocation, 2000);
+    this.data.startNavigationTimer = setInterval(this.getLiveLocation, 1000);
   },
   //设置基线的结束点
   finishSetBaseline:function(){

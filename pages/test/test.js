@@ -2,6 +2,8 @@
 var aircraftPointData = require('../../utils/dataTest.js')
 var operationAreaData = require('../../utils/data.js') 
 var obj = require('../../utils/functionPackage.js')
+
+
 Page({
   data: {
     polyline: [],
@@ -69,6 +71,24 @@ Page({
 
   onLoad: function () {
     var _this = this;
+
+    wx.request({
+      url: 'http://123.127.160.69:8080/survey/jaxrs/surveydata/shapes', //仅为测试接口
+      method: 'post',
+      data: {
+        "equipID": "qd0004",
+        "equipPassword": "qd0004",
+        "startTime": "2017-01-31 00:00:00",
+        "endTime": "2017-05-31 00:00:00"
+      },
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      success: function (res) {
+        console.log(res.data)
+      }
+    })
+
     this.mapCtx = wx.createMapContext('map');
     // console.log(obj.Angle2Arc(20));
     //设置作业区域以及生成航线
