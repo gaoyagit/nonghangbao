@@ -2,10 +2,9 @@
 <!-- open-type="getUserInfo" -->
 <view class="containerBox">
   <view class="userinfo">
-    <!-- <button wx:if="{{!hasUserInfo && canIUse}}"  bindgetuserinfo="getUserInfo">允许农航宝获得用户信息 </button> //wx:else> -->
      <block> 
        <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" background-size="cover"></image> 
-      <text class="userinfo-nickname">欢迎{{userInfo.nickName}}，使用农航宝！</text>
+       <text class="userinfo-nickname">欢迎{{userInfo.nickName}}，使用农航宝！</text>
     </block>
   </view>
   
@@ -14,6 +13,8 @@
 <view class='contentBox'>
   <view class="modetext">
     <text>
+
+    
       请
       选
       择

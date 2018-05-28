@@ -28,6 +28,8 @@ Page({
     dataDisabled: 1,//航向角幅宽按钮
     nextDisabled: 0,//设置下一个按钮
 
+    trackPointer: 0,//指向存航迹的polyline数组下标
+
     navButtonDisplay: 1,//导航按钮
 
     headingAngle: 0,//航向角的值
@@ -35,6 +37,7 @@ Page({
     crossPoints: [],//这个是什么？中间点与作业区的交点吗？
 
     liveLocation: {},//这是什么？导航时，经过的点？
+    allNavigationDot: [],//总数组  飞机飞行经过的点
 
     stopFlag: 0,//当stopFlag为1时清空导航的计时器，结束导航
 
@@ -47,6 +50,13 @@ Page({
     navPoints: [],//每一次导航的时候，要飞航线点的顺序集合
     navIndex: 0,//导航的时候，navPoints航线点的索引
 
+
+
+    startDisabled: 1,//开始按钮
+    pauseDisabled: 0,//暂停按钮
+    finishDisabled: 0,//结束按钮
+    isClickPauseButton: 0,//是否点击了暂停按钮,
+    isClickFinishButton: 0,//是否点击了结束按钮，并且想继续作业
   },
 
 
@@ -242,16 +252,16 @@ Page({
                   operateViewDisplay: 0,
                   setOperateWidthViewDisplay: 0,
                   navViewDisplay: 1,
-                  aircraftToNavIndexInPolyline: self.data.polyline.length
+                  trackPointer: self.data.polyline.length
                 })
+                console.log("trackPointer" + self.data.trackPointer)
+                // for (var i = 0; i < self.data.polyline.length; i++) {
+                //   if (self.data.polyline[i].points.length > 3) {//作业区
+                //     for (var j = 0; j < self.data.polyline[i].points.length; j++)
+                //       console.log("self.data.polyline[i].points" + "[" + i + "]" + self.data.polyline[i].points[j].latitude + "self.data.polyline[i].points" + self.data.polyline[i].points[j].longitude)
+                //   }
 
-                for (var i = 0; i < self.data.polyline.length; i++) {
-                  if (self.data.polyline[i].points.length > 3) {//作业区
-                    for (var j = 0; j < self.data.polyline[i].points.length; j++)
-                      console.log("self.data.polyline[i].points" + "[" + i + "]" + self.data.polyline[i].points[j].latitude + "self.data.polyline[i].points" + self.data.polyline[i].points[j].longitude)
-                  }
-
-                }
+                // }
 
               } else if (res.cancel) {
                 console.log('回到作业区页面')//如果用户点击取消，回到设置作业区域的页面
@@ -264,74 +274,170 @@ Page({
   },
 
   startNavigation: function () {
+    if (this.data.isClickPauseButton || this.data.isClickFinishButton) {
+      this.setData({
+        isClickPauseButton: 0,
+        isClickFinishButton: 0,
+        startDisabled: 0,//开始按钮
+        pauseDisabled: 1,//暂停按钮
+        finishDisabled: 1,//结束按钮
+      })
+      this.data.startNavigationTimer = setInterval(this.getLiveLocation, 200)
+      return
+    }
+
+
+    this.setData({
+      startDisabled: 0,//开始按钮
+      pauseDisabled: 1,//暂停按钮
+      finishDisabled: 1,//结束按钮
+    })
+
     this.data.startNavigationTimer = setInterval(this.getLiveLocation, 2000)
   },
+
   getLiveLocation: function () {
-      // this.navOneAreaing = 0
-      var _this = this;
-      wx.getLocation({
-        type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
-        success: function (res) {
-          _this.data.liveLocation = {
-            latitude: res.latitude,
-            longitude: res.longitude,
-          };
+    var _this = this;
+    wx.getLocation({
+      type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
+      success: function (res) {
+        //飞机当前的位置
+        _this.data.liveLocation = {
+          latitude: res.latitude,
+          longitude: res.longitude,
+        };
 
+        _this.data.navigationDot.push({
+          longitude: res.longitude,
+          latitude: res.latitude
+        });//将飞机飞行经过的点存放在navigationDot数组中
+
+
+        _this.data.polyline[_this.data.trackPointer] = {
+          points: _this.data.navigationDot,
+          color: "#128612",
+          width: 5,
+          dottedLine: false,
+        }
+        //存航点
+        var navigationLastDot;//navigationDot数组中的最后一个点
+        if (_this.data.polyline[_this.data.trackPointer].points.length > 500) {
+          _this.data.allNavigationDot = _this.data.allNavigationDot.concat(_this.data.navigationDot);
+          // 放到 + 1的时候，前面的navigationDot数据就不用写进 + 1位置了，所以就清空了，把navigationDot的最后一个数据写进去 + 1位置，是为了让polyline相连，不至于断一节
+          navigationLastDot = _this.data.navigationDot[_this.data.navigationDot.length - 1];
+          _this.data.navigationDot = [];
           _this.data.navigationDot.push({
-            longitude: res.longitude,
-            latitude: res.latitude
-          });//将飞机飞行经过的点存放在navigationDot数组中
-
-          //存航点
-          _this.data.polyline[_this.data.polyline.length] = {
+            latitude: navigationLastDot.latitude,
+            longitude: navigationLastDot.longitude
+          });
+          _this.data.trackPointer = _this.data.trackPointer + 2;
+          _this.data.polyline[_this.data.trackPointer] = {
             points: _this.data.navigationDot,
             color: "#128612",
-            width: 2,
+            width: 5,
             dottedLine: false,
           }
 
-          // console.log("_this.data.navigationDot" + _this.data.polyline.length);
-
-
-          _this.setData({
-            polyline: _this.data.polyline,
-            liveLocation: _this.data.liveLocation,
-            navigationDot: _this.data.navigationDot
-          })
-
         }
-      })
-    
-  },
-  //暂停导航
-  pauseNavigation: function () {
-    clearInterval(this.data.startNavigationTimer);
-  },
-  //结束导航
-  finishNavigation: function () {
-    var _this = this;
-    clearInterval(this.data.startNavigationTimer);
-    wx.showModal({
-      title: '提示',
-      content: '确定要结束作业吗',
-      success: function (res) {
-        if (res.confirm) {
-          wx.showModal({
-            title: '提示',
-            content: '结束作业',
-            showCancel: false,
-          })
-        } else if (res.cancel) {
-          // var _this = this;
-          wx.showModal({
-            title: '提示',
-            content: '点击开始作业',
-            showCancel: false,
-          })
-        }
+
+        _this.setData({
+          polyline: _this.data.polyline,
+          liveLocation: _this.data.liveLocation,
+          trackPointer: _this.data.trackPointer,
+          allNavigationDot: _this.data.allNavigationDot,
+          navigationDot: _this.data.navigationDot,
+        })
+
       }
     })
 
+
+  },
+
+
+  // getLiveLocation: function () {
+  //     // this.navOneAreaing = 0
+  //     var _this = this;
+  //     wx.getLocation({
+  //       type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
+  //       success: function (res) {
+  //         _this.data.liveLocation = {
+  //           latitude: res.latitude,
+  //           longitude: res.longitude,
+  //         };
+
+  //         _this.data.navigationDot.push({
+  //           longitude: res.longitude,
+  //           latitude: res.latitude
+  //         });//将飞机飞行经过的点存放在navigationDot数组中
+
+  //         //存航点
+  //         _this.data.polyline[_this.data.polyline.length] = {
+  //           points: _this.data.navigationDot,
+  //           color: "#128612",
+  //           width: 2,
+  //           dottedLine: false,
+  //         }
+
+  //         _this.setData({
+  //           polyline: _this.data.polyline,
+  //           liveLocation: _this.data.liveLocation,
+  //           navigationDot: _this.data.navigationDot
+  //         })
+
+  //       }
+  //     })
+    
+  // },
+  //暂停导航
+  pauseNavigation: function () {
+    clearInterval(this.data.startNavigationTimer);
+    this.setData({
+      startDisabled: 1,//开始按钮
+      pauseDisabled: 0,//暂停按钮
+      finishDisabled: 1,//结束按钮
+      isClickPauseButton: 1,
+    })
+  },
+  // 结束按钮
+  finishNavigation: function () {
+    var _this = this;
+    clearInterval(this.data.startNavigationTimer);
+      wx.showModal({
+        title: '提示',
+        content: '确定要结束导航吗',
+        success: function (res) {
+          if (res.confirm) {
+            wx.showModal({
+              title: '提示',
+              content: '导航结束',
+              showCancel: false,
+            })
+
+            _this.setData({
+              startDisabled: 0,//开始按钮
+              pauseDisabled: 0,//暂停按钮
+              finishDisabled: 0,//结束按钮
+            })
+          } else if (res.cancel) {
+            // var _this = this;
+            wx.showModal({
+              title: '提示',
+              content: '点击开始继续导航',
+              showCancel: false,
+              success(res) {
+                _this.setData({
+                  startDisabled: 1,//开始按钮
+                  pauseDisabled: 0,//暂停按钮
+                  finishDisabled: 0,//结束按钮
+                  isClickFinishButton: 1,//
+                })
+              }
+            })
+          }
+        }
+      })
+    
 
   },
 
