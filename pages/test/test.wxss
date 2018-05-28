@@ -1,11 +1,70 @@
-button{
-    border:0px;border-radius:0px;
+/**index.wxss**/
+.containerBox{
+  background-color: white;
+  height: 25vh; 
 }
-.setOperateWidthView{
-    text-align:center;
+.userinfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* background-color: gray; */
 }
 
-.setOperateWidthView input{
-    margin-bottom:100px;
-    margin-top:100px;
+.userinfo-avatar {
+  width: 128rpx;
+  height: 128rpx;
+  margin: 20rpx;
+  border-radius: 50%;
+}
+
+.userinfo-nickname {
+  color: #aaa;
+}
+
+.usermotto {
+  margin-top: 200px;
+}
+
+.contentBox{
+  overflow: hidden;
+  height: 60vh; 
+  
+}
+
+.modetext{
+  padding-top: 20px;
+  font-size: 16px;
+  float: left;
+  width: 30vw;
+  text-align: center;
+  background-color: green;
+  padding-bottom: 20px;
+  color: white;
+  /* height: 50vh; */
+  height: 100vh;
+}
+.modeBox{
+  float: left;
+  width: 70vw;
+}
+.selfBuiltBox,.receiveBox,.defaultBox{
+  height: 20vh;
+  background-color: goldenrod;
+  padding-bottom: 2px; 
+  line-height: 20vh;
+}
+
+.modegroup{
+  width: 70vw;
+  height: 16vh;
+  text-align: center;
+  line-height: 16vh;
+}
+.contactUsBox{
+  height: 15vh;
+  background-color: white;
+  text-align: center;
+  padding-top: 2vh;
+  color: gainsboro;
+  font-size: 14px;
 }

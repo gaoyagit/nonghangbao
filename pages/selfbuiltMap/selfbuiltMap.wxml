@@ -48,14 +48,20 @@
                     bindtap="AirToNavlineDistance" size="default">测试</button> -->
             <button type="primary"
                     style="width: 30%;float:left; };"
-                    bindtap="startNavigation" size="default">开始</button>
+                    bindtap="startNavigation" size="default"
+                    disabled = "{{!startDisabled ? true:false}}"
+                    >开始</button>
                     <!-- display:{{navButtonDisplay?'none':'block'} -->
             <button type="primary"
                     style="width: 40%;float:left; };"
-                    bindtap="pauseNavigation" size="default">暂停</button>          
+                    bindtap="pauseNavigation" size="default"
+                    disabled = "{{!pauseDisabled ? true:false}}"
+                    >暂停</button>          
             <button type="warn"
                     style="width: 30%;float:left; };"
-                    bindtap="finishNavigation" size="default">结束</button>
+                    bindtap="finishNavigation" size="default"
+                    disabled = "{{!finishDisabled ? true:false}}"
+                    >结束</button>
     </view>
 </view>
 

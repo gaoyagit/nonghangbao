@@ -504,7 +504,7 @@ Page({
               showCancel: false,
               success(res) {
                 _this.setData({
-                  indexOfAircraftToPointsInPolyline: _this.data.polyline.length - 2,
+                  // indexOfAircraftToPointsInPolyline: _this.data.polyline.length - 2,
                   startDisabled: 1,//开始按钮
                   pauseDisabled: 0,//暂停按钮
                   finishDisabled: 0,//结束按钮

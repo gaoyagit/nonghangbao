@@ -41,6 +41,12 @@ Page({
         navigationDot: [],//飞机飞行经过的点
         startNavigationTimer: null,
 
+        startDisabled: 1,//开始按钮
+        pauseDisabled: 0,//暂停按钮
+        finishDisabled: 0,//结束按钮
+        isClickPauseButton: 0,//是否点击了暂停按钮,
+        isClickFinishButton: 0,//是否点击了结束按钮，并且想继续作业
+
         aircraftToNavIndexInPolyline:-1,//飞机与导航点的连线在polyline中的位置
         navOneAreaing: 0, //判断是否在导航一个区域，
         allOperationAreaInPolyline: [], //和polyline中的索引一一对应，航线的位置填-1
@@ -306,6 +312,18 @@ Page({
 
 	startNavigation:function(){
 
+    if (this.data.isClickPauseButton || this.data.isClickFinishButton) {
+      this.setData({
+        isClickPauseButton: 0,
+        isClickFinishButton: 0,
+        startDisabled: 0,//开始按钮
+        pauseDisabled: 1,//暂停按钮
+        finishDisabled: 1,//结束按钮
+      })
+      this.data.startNavigationTimer = setInterval(this.getLiveLocation, 200)
+      return
+    }
+
     this.data.allOperationAreaInPolyline = [];
     
 		for (var i = 0,index = 0; i < this.data.polyline.length; i++) {
@@ -318,7 +336,11 @@ Page({
       
 		}
 
-    
+    this.setData({
+      startDisabled: 0,//开始按钮
+      pauseDisabled: 1,//暂停按钮
+      finishDisabled: 1,//结束按钮
+    })
 
     // console.log("startNavigation" + this.data.aircraftToNavIndexInPolyline);
 		this.data.startNavigationTimer = setInterval(this.getLiveLocation,2000)
@@ -458,10 +480,100 @@ Page({
 				}
 			}else{
         // this.navOneAreaing = 0
-    		var _this = this ;
-				wx.getLocation({
-					type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
-					success: function (res) {
+    		// var _this = this ;
+				// wx.getLocation({
+				// 	type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
+				// 	success: function (res) {
+        //     _this.data.liveLocation = {
+        //       latitude: res.latitude,
+        //       longitude: res.longitude,
+        //     };
+
+        //     _this.data.navigationDot.push({
+        //       longitude: res.longitude,
+        //       latitude: res.latitude
+        //     });//将飞机飞行经过的点存放在navigationDot数组中
+
+
+        //     if ((_this.data.navIndex > (_this.data.currentAreaEndPosition - _this.data.currentAreaStartPosition) * 2) && (obj.ComputeSpacialDistance(
+        //       res.latitude,
+        //       res.longitude,
+        //       _this.data.navPoints[_this.data.navPoints.length - 1].latitude,
+        //       _this.data.navPoints[_this.data.navPoints.length - 1].longitude,
+        //       _this.data.vRadius)) < 1000) {
+        //       _this.data.navOneAreaing = 0;
+        //       _this.data.navIndex = 0;
+        //       _this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag = 1 // 将当前作业区设置为1
+        //       for (var i = _this.data.currentAreaStartPosition -1 ; i <= _this.data.currentAreaEndPosition; i++) {
+        //         _this.data.polyline[i].color = "#999999";
+        //       }
+
+        //     }else{
+
+        //       var len = obj.ComputeSpacialDistance(
+        //         _this.data.liveLocation.latitude,
+        //         _this.data.liveLocation.longitude,
+        //         _this.data.navPoints[_this.data.navIndex].latitude,
+        //         _this.data.navPoints[_this.data.navIndex].longitude,
+        //         _this.data.vRadius);
+
+        //       //距离小于10m时，自动导航到下一个点
+        //       if (len <= 1000) {
+        //         _this.data.navIndex++;
+        //       }
+
+        //       _this.data.polyline[_this.data.aircraftToNavIndexInPolyline] = {
+        //         points: [_this.data.liveLocation, _this.data.navPoints[_this.data.navIndex]], //_this.data.liveLocation, navPoints[navIndex]
+        //         color: "#128612",
+        //         width: 2,
+        //         dottedLine: false,
+        //       }
+
+        //     } 
+
+        //     //存航点
+        //     _this.data.polyline[_this.data.aircraftToNavIndexInPolyline +1] = {
+        //       points: _this.data.navigationDot,
+        //       color: "#128612",
+        //       width: 2,
+        //       dottedLine: false,
+        //     }
+
+        //     console.log("_this.data.navigationDot" + _this.data.polyline.length);
+        //     // if (_this.data.polyline.length == _this.data.aircraftToNavIndexInPolyline + 1){
+
+        //     //   _this.data.polyline[_this.data.polyline.length] = {
+        //     //     points: _this.data.navigationDot,
+        //     //     color: "#128612",
+        //     //     width: 2,
+        //     //     dottedLine: false,
+        //     //   }
+
+        //     // }else{
+
+        //     //   _this.data.polyline[_this.data.polyline.length - 1] = {
+        //     //     points: _this.data.navigationDot,
+        //     //     color: "#128612",
+        //     //     width: 2,
+        //     //     dottedLine: false,
+        //     //   }
+
+        //     // }
+
+
+        //     _this.setData({
+        //       polyline: _this.data.polyline,
+        //       liveLocation: _this.data.liveLocation,
+        //       navigationDot: _this.data.navigationDot
+        //     })
+            						
+				// 	}
+				// })
+        var _this = this;
+        wx.getLocation({
+          type: 'gcj02', // 默认为 wgs84 返回 gps 坐标，gcj02 返回可用于 wx.openLocation 的坐标
+          success: function (res) {
+            //飞机当前的位置
             _this.data.liveLocation = {
               latitude: res.latitude,
               longitude: res.longitude,
@@ -472,7 +584,7 @@ Page({
               latitude: res.latitude
             });//将飞机飞行经过的点存放在navigationDot数组中
 
-
+            //如果飞机飞完当前的作业区，将当前作业区域的颜色置为灰色，navOneAreaing = 0;navIndex = 0;回到初始状态
             if ((_this.data.navIndex > (_this.data.currentAreaEndPosition - _this.data.currentAreaStartPosition) * 2) && (obj.ComputeSpacialDistance(
               res.latitude,
               res.longitude,
@@ -482,12 +594,12 @@ Page({
               _this.data.navOneAreaing = 0;
               _this.data.navIndex = 0;
               _this.data.allOperationAreaInPolyline[_this.data.currentAreaStartPosition - 1].flag = 1 // 将当前作业区设置为1
-              for (var i = _this.data.currentAreaStartPosition -1 ; i <= _this.data.currentAreaEndPosition; i++) {
+              for (var i = _this.data.currentAreaStartPosition - 1; i <= _this.data.currentAreaEndPosition; i++) {
                 _this.data.polyline[i].color = "#999999";
               }
 
-            }else{
-
+            } else {
+              //飞机当前位置离辅助导航点的距离，如果两者之间的长度小于100米，则跳到下一个辅助导航点
               var len = obj.ComputeSpacialDistance(
                 _this.data.liveLocation.latitude,
                 _this.data.liveLocation.longitude,
@@ -495,66 +607,70 @@ Page({
                 _this.data.navPoints[_this.data.navIndex].longitude,
                 _this.data.vRadius);
 
-              //距离小于10m时，自动导航到下一个点
-              if (len <= 1000) {
+              //距离小于100m时，自动导航到下一个点
+              if (len <= 100) {
                 _this.data.navIndex++;
               }
 
-              _this.data.polyline[_this.data.aircraftToNavIndexInPolyline] = {
-                points: [_this.data.liveLocation, _this.data.navPoints[_this.data.navIndex]], //_this.data.liveLocation, navPoints[navIndex]
-                color: "#128612",
+              _this.data.polyline[_this.data.indexOfAircraftToPointsInPolyline] = {
+                points: [_this.data.liveLocation, _this.data.navPoints[_this.data.navIndex]], //this.data.liveLocation, navPoints[navIndex]
+                color: "#0618EF",
                 width: 2,
                 dottedLine: false,
               }
 
-            } 
-
-            //存航点
-            _this.data.polyline[_this.data.aircraftToNavIndexInPolyline +1] = {
-              points: _this.data.navigationDot,
-              color: "#128612",
-              width: 2,
-              dottedLine: false,
             }
 
-            console.log("_this.data.navigationDot" + _this.data.polyline.length);
-            // if (_this.data.polyline.length == _this.data.aircraftToNavIndexInPolyline + 1){
 
-            //   _this.data.polyline[_this.data.polyline.length] = {
-            //     points: _this.data.navigationDot,
-            //     color: "#128612",
-            //     width: 2,
-            //     dottedLine: false,
-            //   }
+            _this.data.polyline[_this.data.aircraftPointArrayInPolylineIndex] = {
+              points: _this.data.navigationDot,
+              color: "#128612",
+              width: 5,
+              dottedLine: false,
+            }
+            //存航点
+            var navigationLastDot;//navigationDot数组中的最后一个点
+            if (_this.data.polyline[_this.data.aircraftPointArrayInPolylineIndex].points.length > 500) {
+              _this.data.allNavigationDot = _this.data.allNavigationDot.concat(_this.data.navigationDot);
+              // 放到 + 1的时候，前面的navigationDot数据就不用写进 + 1位置了，所以就清空了，把navigationDot的最后一个数据写进去 + 1位置，是为了让polyline相连，不至于断一节
+              navigationLastDot = _this.data.navigationDot[_this.data.navigationDot.length - 1];
+              _this.data.navigationDot = [];
+              _this.data.navigationDot.push({
+                latitude: navigationLastDot.latitude,
+                longitude: navigationLastDot.longitude
+              });
+              _this.data.aircraftPointArrayInPolylineIndex = _this.data.aircraftPointArrayInPolylineIndex + 1;
+              _this.data.polyline[_this.data.aircraftPointArrayInPolylineIndex] = {
+                points: _this.data.navigationDot,
+                color: "#128612",
+                width: 5,
+                dottedLine: false,
+              }
 
-            // }else{
-
-            //   _this.data.polyline[_this.data.polyline.length - 1] = {
-            //     points: _this.data.navigationDot,
-            //     color: "#128612",
-            //     width: 2,
-            //     dottedLine: false,
-            //   }
-
-            // }
-
+            }
 
             _this.setData({
               polyline: _this.data.polyline,
               liveLocation: _this.data.liveLocation,
               navigationDot: _this.data.navigationDot
             })
-            						
-					}
-				})
+
+          }
+        })
 			}
 		},
-  pauseNavigation:function(){
+    // 暂停按钮
+  pauseNavigation: function () {
     clearInterval(this.data.startNavigationTimer);
     this.setData({
-      aircraftToNavIndexInPolyline: this.data.polyline.length-2
+      startDisabled: 1,//开始按钮
+      pauseDisabled: 0,//暂停按钮
+      finishDisabled: 1,//结束按钮
+      isClickPauseButton: 1,
     })
   },
+
+  // 结束按钮
 	finishNavigation:function(){
     var _this = this;
     clearInterval(this.data.startNavigationTimer);
@@ -576,6 +692,12 @@ Page({
                 content: '导航结束',
                 showCancel: false,
               })
+
+              _this.setData({
+              startDisabled: 0,//开始按钮
+              pauseDisabled: 0,//暂停按钮
+              finishDisabled: 0,//结束按钮
+            })
             } else if (res.cancel) {
               // var _this = this;
               wx.showModal({
@@ -584,8 +706,11 @@ Page({
                 showCancel: false,
                 success(res){
                   _this.setData({
-                    aircraftToNavIndexInPolyline: _this.data.polyline.length - 2
-                  })
+                  startDisabled: 1,//开始按钮
+                  pauseDisabled: 0,//暂停按钮
+                  finishDisabled: 0,//结束按钮
+                  isClickFinishButton: 1,//
+                })
                 }
               })
             }
@@ -594,7 +719,7 @@ Page({
       }
      
 	},
-   
+
     //**************************************************生成航线****************************************
     generateNavLine:function() {
           // var _this = this;

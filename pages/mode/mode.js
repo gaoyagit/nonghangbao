@@ -21,11 +21,12 @@ Page({
     wx.getUserInfo({
       success: function (res) {
         app.globalData.userInfo = res.userInfo
+        console.log(res.userInfo);
         _this.setData({
           userInfo: res.userInfo,
           hasUserInfo: true
         })
-        // console.log(res.userInfo);
+      
       }
     })
 
