@@ -1,5 +1,6 @@
 {
   "pages": [
+          "pages/testLogin/index",
     "pages/genPlanlineInWork/finishSetBaselinemap",
     "pages/mode/mode",
     
