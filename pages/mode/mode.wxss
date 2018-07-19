@@ -1,5 +1,14 @@
 /**index.wxss**/
-.containerBox{
+.userinfoButton{
+  text-align: center;
+  width: 80%;
+  height: 100rpx;
+  margin-left:  auto;
+  margin-right: auto;
+  margin-top: 50%;
+}
+
+/* .containerBox{
   background-color: white;
   height: 25vh; 
 }
@@ -8,63 +17,64 @@
   flex-direction: column;
   align-items: center;
   /* background-color: gray; */
-}
+/* } */ 
 
 .userinfo-avatar {
   width: 128rpx;
   height: 128rpx;
   margin: 20rpx;
   border-radius: 50%;
+  margin-left: 45vw; 
+  /* text-align: center; */
 }
 
 .userinfo-nickname {
   color: #aaa;
+  display: block;
+  text-align: center;
 }
-
-.usermotto {
-  margin-top: 200px;
-}
-
-.contentBox{
+.modetextBox{
+  margin-top: 2vh;
   overflow: hidden;
-  height: 60vh; 
-  
-}
-
-.modetext{
-  padding-top: 20px;
-  font-size: 16px;
-  float: left;
-  width: 30vw;
   text-align: center;
-  background-color: green;
-  padding-bottom: 20px;
-  color: white;
-  /* height: 50vh; */
-  height: 100vh;
 }
-.modeBox{
+.modeSelectText{
+  /* display: block; */
+  width: 25vw;
+  background-color: #BCCC68;
   float: left;
-  width: 70vw;
-}
-.selfBuiltBox,.receiveBox,.defaultBox{
-  height: 20vh;
-  background-color: goldenrod;
-  padding-bottom: 2px; 
-  line-height: 20vh;
-}
+  height: 60vh;
 
+}
+.modeSelectButton{
+  float: right;
+  width: 75vw;
+  height: 60vh;
+}
 .modegroup{
-  width: 70vw;
-  height: 16vh;
-  text-align: center;
-  line-height: 16vh;
+  height: 15vh;
+  line-height: 15vh;  
+  border:0px;
+}
+.selfbuilt{
+  background-color: #6DD87F;
+}
+.receive{
+  background-color: #B7E8A2;
+}
+.default{
+  background-color: #6DD87F;
+}
+.realtimeOperation{
+  background-color: #B7E8A2;
 }
 .contactUsBox{
-  height: 15vh;
-  background-color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 15px;
   text-align: center;
-  padding-top: 2vh;
   color: gainsboro;
-  font-size: 14px;
+  margin-top: 3vh;
+}
+.contactUsBox>view{
+  margin-bottom: 0.5vh;
 }

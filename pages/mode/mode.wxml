@@ -1,6 +1,6 @@
 <!--index.wxml-->
 <!-- open-type="getUserInfo" -->
-<view class="containerBox">
+<!-- <view class="containerBox">
   <view class="userinfo">
      <block> 
        <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" background-size="cover"></image> 
@@ -8,11 +8,18 @@
     </block>
   </view>
   
+</view> -->
+  <view class="userinfoButton" style="display:{{!userInfoViewDisplay?'none':'block'}};">
+    <button wx:if="{{!hasUserInfo && canIUse && getUserInfoFail}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo"> 授权农航宝 </button>
 </view>
 <!--mode.wxml-->
-<view class='contentBox'>
-  <view class="modetext">
-    <text>
+<view class='contentBox' style="display:{{!operateViewDisplay?'none':'block'}};">
+  <block wx:if="{{hasUserInfo}}" class="userInfo">
+    <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" background-size="cover"></image>
+    <text class="userinfo-nickname">欢迎{{userInfo.nickName}}，使用农航宝</text>
+  </block>
+   <view class="modetextBox">
+    <text class='modeSelectText'>
 
     
       请
@@ -24,30 +31,37 @@
       业
       模
       式
-    </text>
-  </view>
-  <view class='modeBox'>
-    <view class='selfBuiltBox'>
-      <button class="modegroup" bindtap="selfbuilt">自建任务</button> 
-    </view>
-    
-    <view class='receiveBox'>
-      <button class="modegroup" bindtap="receive">接收任务</button> 
-    </view>
 
-    <view class='defaultBox'>
-      <button class="modegroup" bindtap="default">缺省模式</button> 
-    </view>
+
+    </text>
+    <view class='modeSelectButton'>
+      <view class='selfBuiltBox'>
+        <button class="modegroup selfbuilt" bindtap="selfbuilt">自建任务</button> 
+      </view>
+      
+      <view class='receiveBox'>
+        <button class="modegroup receive" bindtap="receive">接收任务</button> 
+      </view>
+
+      <view class='defaultBox'>
+        <button class="modegroup default" bindtap="default">缺省模式</button> 
+      </view>
+
+      <view class='realtimeOperationBox'>
+        <button class="modegroup realtimeOperation" bindtap="realtimeOperation">实时作业</button> 
+      </view>
     
+    </view> 
   </view>
+  
 </view>
   
 
-<view class='contactUsBox'>
+ <view class='contactUsBox' style="display:{{!footViewDisplay?'none':'block'}};">
   <view>北京市农林科学院农业航空部</view>
   <view bindtap='makePhoneCall'>联系电话：010-22222222</view>
   <view>北京市海淀区曙光花园中路农科大厦B座505</view>
   
-</view>
+</view> 
 
 

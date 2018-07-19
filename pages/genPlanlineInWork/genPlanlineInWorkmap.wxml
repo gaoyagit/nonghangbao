@@ -1,6 +1,16 @@
 
 <view class="foot" style="width: 100%;">
 
+    <view class="userinfoButton" style="display:{{!userInfoViewDisplay?'none':'block'}};">
+    <button wx:if="{{!hasUserInfo && canIUse && getUserInfoFail}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo"> 授权农航宝 </button>
+</view>
+<!--mode.wxml-->
+<view class='contentBox' style="display:{{!operateViewDisplay?'none':'block'}};">
+  <block wx:if="{{hasUserInfo}}" class="userInfo">
+    <image bindtap="bindViewTap" class="userinfo-avatar" src="{{userInfo.avatarUrl}}" background-size="cover"></image> 
+  </block>
+</view> 
+    
     <view class="mapView" style="width: 100%; display:{{!mapViewDisplay?'none':'block'}};">
         <map
                 id="map"
@@ -17,10 +27,9 @@
         </map>   
     </view>
 
-
     <!-- 设置幅宽的值 -->
     <view class="setOperateWidthView" style="width: 100%; display:{{!setOperateWidthViewDisplay?'none':'block'}};">
-          <label>设置幅宽和航向角</label>
+          <label>设置幅宽</label>
           <input type="number" bindinput="setOperateWidth" placeholder="请在这里输入幅宽,初始值为30m"></input>
           <button type="default" style="width: 70%;" bindtap="finishSetOperateWidthView" size="default">确定</button>
     </view>

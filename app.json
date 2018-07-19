@@ -1,14 +1,13 @@
 {
   "pages": [
-          "pages/testLogin/index",
-    "pages/genPlanlineInWork/finishSetBaselinemap",
     "pages/mode/mode",
     "pages/genPlanlineInWork/genPlanlineInWorkmap",
+    
+    "pages/testLogin/index", 
+    
     "pages/defaultMap/defaultMap",
     "pages/receiveMap/receiveMap",
-    "pages/selfbuiltMap/selfbuiltMap",
-    
-          
+    "pages/selfbuiltMap/selfbuiltMap",      
     "pages/index/index",
     "pages/logs/logs"   
   ],
