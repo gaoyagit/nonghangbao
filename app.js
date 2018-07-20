@@ -1,5 +1,9 @@
 //app.js
+var Bmob = require('../utils/bmob.js');
+
 App({
+  Bmob.initialize("你的Application ID", "你的REST API Key"),
+  
   onLaunch: function() {
     //调用API从本地缓存中获取数据
     var logs = wx.getStorageSync('logs') || []

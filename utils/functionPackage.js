@@ -18,6 +18,9 @@ module.exports = {
   twoLineCross: twoLineCross,/// 球面获取两线段交点
   getLongestSide: getLongestSide, //getLongestSide找到当前作业区域的最长边
   findLatelyNavLine: findLatelyNavLine,//找到离出发点最近的航线，以及该航线上离出发点最近的点。
+  getNowFormatDate: getNowFormatDate, // 将时间转换成yyyy-mm-dd hh:mm:ss
+  
+  
 }
 
 // map.js
@@ -775,6 +778,24 @@ function findLatelyNavLine(startPoint, polyline, areaStartPostion, areaEndPositi
     linePointsIndex: arr[0].linePointsIndex,
   }
 
+}
+// 将时间转换成yyyy-mm-dd hh:mm:ss
+function getNowFormatDate() {
+  var date = new Date();
+  var seperator1 = "-";
+  var seperator2 = ":";
+  var month = date.getMonth() + 1;
+  var strDate = date.getDate();
+  if (month >= 1 && month <= 9) {
+    month = "0" + month;
+  }
+  if (strDate >= 0 && strDate <= 9) {
+    strDate = "0" + strDate;
+  }
+  var currentdate = date.getFullYear() + seperator1 + month + seperator1 + strDate
+    + " " + date.getHours() + seperator2 + date.getMinutes()
+    + seperator2 + date.getSeconds();
+  return currentdate;
 }
 
 

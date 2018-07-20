@@ -3,6 +3,7 @@ var aircraftPointData = require('../../utils/genplainData.js')
 var operationAreaData = require('../../utils/data.js')
 var obj = require('../../utils/functionPackage.js')
 var app = getApp();
+var Bmob = require('../../utils/bmob.js');
 
 Page({
   data: {
@@ -86,15 +87,15 @@ Page({
     isClickPauseButton: 0,//是否点击了暂停按钮,
     isClickFinishButton: 0,//是否点击了结束按钮，并且想继续作业
     tempPolyline: [],//重现polyline，只有航线和作业区
+
+    angle:0,//飞机实时飞行时角度
   },
 
   // getLiveLocationTimes:1,
 
 
   onLoad: function () {
-    var data = new Date().format("yyyy-MM-dd HH:mm:ss");
-    console.log(data);
-    
+
     var _this = this;
     this.mapCtx = wx.createMapContext('map');
     _this.setData({
@@ -103,16 +104,36 @@ Page({
     //设置基线，点击开始开始记录航迹，点击开始的点为基线的起始点，点击结束时的点为基线的结束点
     wx.showModal({
       title: '提示',
-      content: '请设置幅宽', 
-      showCancel: false,
+      content: '默认幅宽为30m，是否设置幅宽', 
+      showCancel: true,
       success(res){
-        _this.setData({
-          // startSetBaselineButton: 1,
-          mapViewDisplay:0,
-          setBaselineViewDisplay:0,
-          setOperateWidthViewDisplay: 1
-        })
-      } 
+
+        if (res.confirm) {
+          _this.setData({
+            // startSetBaselineButton: 1,
+            mapViewDisplay: 0,
+            setBaselineViewDisplay: 1,
+            setOperateWidthViewDisplay: 0
+          })
+        } else if (res.cancel) {
+          wx.showModal({
+            title: '提示',
+            content: '请点击开始按钮，设置作业基线',
+            showCancel: false,
+            success: function () {
+              _this.setData({
+                mapViewDisplay: 1,
+                setOperateWidthViewDisplay: 0,
+                setBaselineViewDisplay: 1,
+                startSetBaselineButton: 1,
+              })
+            }
+          })
+        }
+
+
+        
+      }
     })
 
    
@@ -540,34 +561,6 @@ Page({
 
           }
         }
-        // for (var i = 0; i < 3; i++) {
-        //   // this.data.baselineStartPoint, this.data.baselineFinishPoint
-        //   //通过一条线段的两个端点，找距离该线段this.data.operateWidth米的另外一条线的两个端点
-        //   var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, this.data.operateWidth, this.data.headingAngle - 90);
-        //   var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, this.data.operateWidth, this.data.headingAngle - 90);
-
-        //   if (this.data.polyline.length % 2 == 0) {
-        //     this.data.polyline[this.data.polyline.length] = {
-        //       points: [],
-        //       color: "#FF0000DD",
-        //       width: 2,
-        //       dottedLine: false
-        //     }
-        //   }
-        //   // console.log("this.data.polyline.length22222222:" + this.data.polyline[2].points.length);
-        //   this.data.polyline[this.data.polyline.length] = {
-        //     points: [plainLineFirstPoint, plainLineEndPoint],
-        //     color: "#9515CA",
-        //     width: 2,
-        //     dottedLine: false
-        //   }
-
-        //   this.data.baselineStartPoint = plainLineFirstPoint
-        //   this.data.baselineFinishPoint = plainLineEndPoint;
-        //   plainLineFirstPoint = {};
-        //   plainLineEndPoint = {};
-
-        // }
         
       } else if (this.data.rightPlainLineFlag == 1) {
         //如果航向角在0-90度、270-360，向左生成航线应该用航向角的值加90度，否则应该减去90度
@@ -630,35 +623,6 @@ Page({
 
           }
         }
-        // //再次向左生成3条航线
-        // for (var i = 0; i < 3; i++) {
-        //   // this.data.baselineStartPoint, this.data.baselineFinishPoint
-        //   //通过一条线段的两个端点，找距离该线段this.data.operateWidth米的另外一条线的两个端点
-        //   var plainLineFirstPoint = obj.computeOffset(this.data.baselineStartPoint.latitude, this.data.baselineStartPoint.longitude, this.data.operateWidth, this.data.headingAngle + 90);
-        //   var plainLineEndPoint = obj.computeOffset(this.data.baselineFinishPoint.latitude, this.data.baselineFinishPoint.longitude, this.data.operateWidth, this.data.headingAngle + 90);
-
-        //   if (this.data.polyline.length % 2 == 0) {
-        //     this.data.polyline[this.data.polyline.length] = {
-        //       points: [],
-        //       color: "#FF0000DD",
-        //       width: 2,
-        //       dottedLine: false
-        //     }
-        //   }
-        //   // console.log("this.data.polyline.length22222222:" + this.data.polyline[2].points.length);
-        //   this.data.polyline[this.data.polyline.length] = {
-        //     points: [plainLineFirstPoint, plainLineEndPoint],
-        //     color: "#9515CA",
-        //     width: 2,
-        //     dottedLine: false
-        //   }
-
-        //   this.data.baselineStartPoint = plainLineFirstPoint
-        //   this.data.baselineFinishPoint = plainLineEndPoint;
-        //   plainLineFirstPoint = {};
-        //   plainLineEndPoint = {};
-
-        // }
       }
 
     } else {
@@ -752,8 +716,27 @@ Page({
             latitude: res.latitude,
             longitude: res.longitude,
           };
-          /***************存数据库**************************/
 
+          _this.data.navigationDot.push({
+            longitude: res.longitude,
+            latitude: res.latitude
+          });//将飞机飞行经过的点存放在navigationDot数组中
+
+          if (_this.data.navigationDot.length == 1){
+            _this.data.angle = obj.GetAzimuth(
+              _this.data.navigationDot[0].latitude, 
+              _this.data.navigationDot[0].longitude, 
+              _this.data.navigationDot[0].latitude, 
+              _this.data.navigationDot[0].longitude);
+          }else{
+            _this.data.angle = obj.GetAzimuth(
+              _this.data.navigationDot[_this.data.navigationDot.length - 2].latitude,
+              _this.data.navigationDot[_this.data.navigationDot.length - 2].longitude,
+              _this.data.navigationDot[_this.data.navigationDot.length - 1].latitude,
+              _this.data.navigationDot[_this.data.navigationDot.length - 1].longitude,);
+          }
+          
+          /***************存数据库**************************/
           wx.request({
             url: 'http://localhost:8081', //仅为示例，并非真实的接口地址
             method: "POST",
@@ -762,7 +745,9 @@ Page({
               latitude: res.latitude,
               nickName:_this.data.nickName,
               speed:res.speed,
-              time:res.horizontalAccuracy,
+              time: obj.getNowFormatDate(),
+              angle: _this.data.angle
+          
               // userInfo:
             },
             header: {
@@ -777,10 +762,7 @@ Page({
           })
          
          
-            _this.data.navigationDot.push({
-              longitude: res.longitude,
-              latitude: res.latitude
-            });//将飞机飞行经过的点存放在navigationDot数组中
+            
 
 
             _this.data.polyline[_this.data.trackPointer] = {
