@@ -1,9 +1,5 @@
 
 <view class="foot" style="width: 100%;">
-
-    <view class="userinfoButton" style="display:{{!userInfoViewDisplay?'none':'block'}};">
-    <button wx:if="{{!hasUserInfo && canIUse && getUserInfoFail}}" open-type="getUserInfo" bindgetuserinfo="getUserInfo"> 授权农航宝 </button>
-</view>
 <!--mode.wxml-->
 <view class='contentBox' style="display:{{!operateViewDisplay?'none':'block'}};">
   <block wx:if="{{hasUserInfo}}" class="userInfo">

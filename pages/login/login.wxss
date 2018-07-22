@@ -1,6 +1,0 @@
-.inputtype{border: solid 1px gainsboro}
-.usermotto{width:80%;}
-.logocontainer{text-align: center;margin-bottom: 50rpx;}
-.logo{width: 158rpx; height: 158rpx; border-radius: 80%;}
-.loginbtn{margin-top:30rpx;background-color:#48c23d;}
-.registerbtn{margin-top:30rpx;}

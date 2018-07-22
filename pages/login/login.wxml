@@ -1,14 +1,5 @@
-<view class="container">  
-  <view class="usermotto">  
-    <view class="logocontainer">
-      <image class="logo" src="{{imglogo}}" background-size="cover"></image>
+<view class="container">
+    <view class="userinfoButton" style="display:{{userInfoViewDisplay?'block':'none'}}">
+        <button open-type="getUserInfo" bindgetuserinfo="getUserInfo">授权用户信息给农航宝</button>
     </view>
-    <label class="labeltxt">用户名:</label>
-    <input class="inputtype" type="text" bindinput="userNameInput"/>  
-    <label class="labeltxt">密码:</label>
-    <input type="text" class="inputtype" bindinput="userPasswordInput" password="true"/>  
-    <button class="loginbtn" bindtap="login">登录</button>  
-    <button class="registerbtn" bindtap="register">立即注册</button>
-  </view>  
-  
-</view>  
+</view>

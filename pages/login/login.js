@@ -1,61 +1,66 @@
 var app = getApp()
 Page({
   data: {
-    userName: '',
-    password: '',
-    id_token: '',//方便存在本地的locakStorage  
-    response: '' ,//存取返回数据  
-    imglogo:'/pages/images/4.jpg' 
+    userInfoViewDisplay: false,
   },
-  userNameInput: function (e) {
-    this.setData({
-      username: e.detail.value
-    })
+  onLoad: function () {
+    this.login();
   },
-  userPasswordInput: function (e) {
-    this.setData({
-      password: e.detail.value
-    })
-    console.log(e.detail.value)
+  getUserInfo(e) {
+    var userInfo = e.detail.userInfo;
+    if (userInfo) {
+      app.globalData.userInfo = userInfo;
+      wx.redirectTo({
+        url: '../../pages/genPlanlineInWork/genPlanlineInWorkmap'
+      })
+    } else {
+      this.openSetting();
+    }
   },
-  login: function () {
-    var that = this
-    wx.request({
-      url: 'http://127.0.0.1:9120',//怎样进行后台调用？
-      data: {
-        username: this.data.username,
-        password: this.data.password,
-      },
-      method: 'GET',
+  openSetting() {
+    var _this = this;
+    if (wx.openSetting) {
+      wx.openSetting({
+        success: function (res) {
+          _this.login();
+        }
+      })
+    } else {
+      wx.showModal({
+        title: '授权提示',
+        content: '小程序需要您的微信授权才能使用!',
+      })
+    }
+  },
+  login() {
+    var _this = this;
+    wx.login({
       success: function (res) {
-        that.setData({
-          id_token: res.data.id_token,
-          response: res
+        console.log(789879)
+        wx.getUserInfo({
+          success: function (res) {
+            console.log(234234)
+            app.globalData.userInfo = res.userInfo;
+            console.log(app.globalData)
+            wx.redirectTo({
+              //url: '../../pages/mode/mode'
+              url:'../../pages/genPlanlineInWork/genPlanlineInWorkmap'
+            })
+          },
+          fail: function () {
+            console.log('fail;')
+            _this.setData({
+              userInfoViewDisplay: true,
+            })
+          }
         })
-        console.log(res)
-        try {
-          wx.setStorageSync('id_token', res.data.id_token)
-        } catch (e) {
-        }
-        if(res.data.data){
-          wx.navigateTo({
-            url: '../../pages/mode/mode'
-          })
-        }else{
-          alert("登录失败，请重新登录！");
-          console.log("登录失败，密码不对")
-        }
       },
-      fail: function (res) {
-        console.log(res.data);
-        console.log('is failed')
+      fail: function () {
+        console.log('fail;')
+        _this.setData({
+          userInfoViewDisplay: true,
+        })
       }
     })
   },
-  register:function()
-  {
-    wx.navigateTo({
-      url: '../../pages/register/register'
-    })
-  }
 })  

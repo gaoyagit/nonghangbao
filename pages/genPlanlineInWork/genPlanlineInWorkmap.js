@@ -4,9 +4,17 @@ var operationAreaData = require('../../utils/data.js')
 var obj = require('../../utils/functionPackage.js')
 var app = getApp();
 var Bmob = require('../../utils/bmob.js');
-
+console.log(app.globalData)
 Page({
   data: {
+    motto: 'Hello World',
+    userInfo: {},
+    hasUserInfo: false,
+    getUserInfoFail: false,
+    canIUse: wx.canIUse('button.open-type.getUserInfo'),
+    userInfoViewDisplay: 1,
+
+
     nickName:'',
     polyline: [],
     markers: [],
@@ -95,25 +103,25 @@ Page({
 
 
   onLoad: function () {
-
     var _this = this;
     this.mapCtx = wx.createMapContext('map');
     _this.setData({
-      nickName:app.globalData.userInfo.nickName,
+      userInfo:app.globalData.userInfo,
+      nickName: app.globalData.userInfo.nickName,
     })
     //设置基线，点击开始开始记录航迹，点击开始的点为基线的起始点，点击结束时的点为基线的结束点
     wx.showModal({
       title: '提示',
-      content: '默认幅宽为30m，是否设置幅宽', 
+      content: '默认幅宽为30m，是否设置幅宽',
       showCancel: true,
-      success(res){
+      success(res) {
 
         if (res.confirm) {
           _this.setData({
             // startSetBaselineButton: 1,
             mapViewDisplay: 0,
-            setBaselineViewDisplay: 1,
-            setOperateWidthViewDisplay: 0
+            setBaselineViewDisplay: 0,
+            setOperateWidthViewDisplay: 1
           })
         } else if (res.cancel) {
           wx.showModal({
@@ -132,18 +140,16 @@ Page({
         }
 
 
-        
+
       }
     })
 
-   
-  
     wx.getLocation({
       success: function (res) {
         _this.setData({
           latitude: res.latitude,
           longitude: res.longitude,
-        
+
         })
       },
     })
@@ -737,32 +743,70 @@ Page({
           }
           
           /***************存数据库**************************/
-          wx.request({
-            url: 'http://localhost:8081', //仅为示例，并非真实的接口地址
-            method: "POST",
-            data: {
-              longitude: res.longitude,
-              latitude: res.latitude,
-              nickName:_this.data.nickName,
-              speed:res.speed,
-              time: obj.getNowFormatDate(),
-              angle: _this.data.angle
+          // wx.request({
+          //   url: 'http://localhost:8081', //仅为示例，并非真实的接口地址
+          //   method: "POST",
+          //   data: {
+          //     longitude: res.longitude,
+          //     latitude: res.latitude,
+          //     nickName:_this.data.nickName,
+          //     speed:res.speed,
+          //     time: obj.getNowFormatDate(),
+          //     angle: _this.data.angle
           
-              // userInfo:
-            },
-            header: {
-              'content-type': 'application/x-www-form-urlencoded' // 默认值
-            },
-            success: function (res) {
-              console.log(res.data)
-            },
-            fail:function(e){
-              console.log(e)
-            },
-          })
+          //     // userInfo:
+          //   },
+          //   header: {
+          //     'content-type': 'application/x-www-form-urlencoded' // 默认值
+          //   },
+          //   success: function (res) {
+          //     console.log(res.data)
+          //   },
+          //   fail:function(e){
+          //     console.log(e)
+          //   },
+          // })
+          // var T_flightPath = Bmob.Object.extend("T_flightPath");
+          // var flightPath = new T_flightPath();
+          // flightPath.set("longitude", res.longitude);
+          // flightPath.set("latitude", res.latitude);
+          // flightPath.set("nickName", _this.data.nickName);
+          // flightPath.set("speed", res.speed);
+          // flightPath.set("angle", _this.data.angle);
+
+          // //添加数据，第一个入口参数是null
+          // flightPath.save(null, {
+          //   success: function (result) {
+          //     // 添加成功，返回成功之后的objectId（注意：返回的属性名字是id，不是objectId），你还可以在Bmob的Web管理后台看到对应的数据
+          //     console.log("日记创建成功, objectId:" + result.id);
+          //   },
+          //   error: function (result, error) {
+          //     // 添加失败
+          //     console.log('创建日记失败');
+
+          //   }
+          // });
          
-         
-            
+
+          var Test = Bmob.Object.extend("test");
+          var test = new Test();
+          test.set("longitude", res.longitude);
+          test.set("latitude", res.latitude);
+          test.set("nickName", _this.data.nickName);
+          test.set("speed", res.speed);
+          test.set("angle", _this.data.angle);
+          //添加数据，第一个入口参数是null
+          test.save(null, {
+            success: function (result) {
+              // 添加成功，返回成功之后的objectId（注意：返回的属性名字是id，不是objectId），你还可以在Bmob的Web管理后台看到对应的数据
+              console.log("日记创建成功, objectId:" + result.id);
+            },
+            error: function (result, error) {
+              // 添加失败
+              console.log('创建日记失败');
+
+            }
+          });            
 
 
             _this.data.polyline[_this.data.trackPointer] = {

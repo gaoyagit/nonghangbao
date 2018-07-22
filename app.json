@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/login/login",
     "pages/mode/mode",
     "pages/genPlanlineInWork/genPlanlineInWorkmap",
     
@@ -9,7 +10,7 @@
     "pages/receiveMap/receiveMap",
     "pages/selfbuiltMap/selfbuiltMap",      
     "pages/index/index",
-    "pages/logs/logs"   
+    "pages/logs/logs" 
   ],
   "window": {
     "backgroundTextStyle": "light",
