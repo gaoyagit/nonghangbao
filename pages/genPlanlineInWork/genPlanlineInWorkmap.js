@@ -145,6 +145,7 @@ Page({
     })
 
     wx.getLocation({
+      type: 'gcj02',
       success: function (res) {
         _this.setData({
           latitude: res.latitude,
@@ -219,6 +220,7 @@ Page({
     // }
     var _this = this
     wx.getLocation({
+      type: 'gcj02',
       success: function (res) {
         _this.setData({
           baselineStartPoint: {
@@ -237,6 +239,7 @@ Page({
   finishSetBaseline:function(){
     var _this = this
     wx.getLocation({
+      type: 'gcj02',
       success: function (res) {
         _this.setData({
           baselineFinishPoint: {

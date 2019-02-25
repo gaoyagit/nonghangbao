@@ -1,5 +1,5 @@
 module.exports = {
-  ComputeHeading: ComputeHeading,// 将以北方向为零点的坐标方位角转化为用于表示斜率的夹角
+  ComputeHeading: ComputeHeading,// 计算起点到终点的航向角
   Angle2Arc: Angle2Arc,// 角度转弧度
   Arc2Angle: Arc2Angle,/// 弧度转角度
   Heading2KAndgle: Heading2KAndgle,// 将以北方向为零点的坐标方位角转化为用于表示斜率的夹角
@@ -134,13 +134,7 @@ function ComputeAngle(vLat1, vLon1, vLat2, vLon2, vLat3, vLon3) {
 }
 
 
-/// 计算出射线0H与线段01的夹角(小于180度)
-/// </summary>
-/// <param name="vLat0">射线端点纬度</param>
-/// <param name="vLon0">射线端点经度</param>
-/// <param name="vHeading">射线端点航向角</param>
-// <param name="vLat1"></param>
-/// <param name="vLon1"></param>
+/// 计算出射线0H与线段01的夹角(小于180度) vLat0-射线端点纬度 vLon0-射线端点经度 vHeading-射线端点航向角 vLat1-线段端点的纬度 vLon1-线段端点的经度
 function raysComputeAngle(vLat0, vLon0, vHeading, vLat1, vLon1) {
   var rDouble = Math.abs(GetAzimuth(vLat0, vLon0, vLat1, vLon1) - vHeading);
   if (rDouble > 180) {
@@ -150,32 +144,14 @@ function raysComputeAngle(vLat0, vLon0, vHeading, vLat1, vLon1) {
 }
 
 
-//求1到2的方位角(圆心在1上，角度制)
+//以真北为方向，求1到2的方位角(圆心在1上，角度制)
 function GetAzimuth(vLat1, vLon1, vLat2, vLon2) {
   return ComputeHeading(vLat1, vLon1, vLat2, vLon2);
 }
 
-// 获取两点间线段距离
-function GetLatLonDistance(vLat1, vLon1, vLat2, vLon2) {
-  return Math.sqrt(Math.pow(vLat1 - vLat2, 2) + Math.pow(vLon1 - vLon2, 2));
-}
-
-/// 获取航点到航线的最短距离
-function GetLatLonMinDistance(vPoint, vLine) {
-  if (vPoint == null || vLine == null) return double.NaN;
-  return GetLatLonMinDistance(vPoint.Lat, vPoint.Lon, vLine.Lat1, vLine.Lon1, vLine.Lat2, vLine.Lon2);
-}
-
-/// 计算点到直线的最短距离
-function GetLatLonMinDistance(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2) {
-  var pFootPointLat = 0;
-  var pFootPointLon = 0;
-  GetLatLonFootPoint(vLat0, vLon0, vLat1, vLon1, vLat2, vLon2);
-  return ComputeSpacialDistance(vLat0, vLon0, pFootPointLat, pFootPointLon);
-}
 
 
-/// 计算两点间的球面距离（单位为米）<param name="vRadius"></param>vRadius = EarthRadius
+/// 计算两点间的球面距离（单位为米）vRadius-地球半径
 function ComputeSpacialDistance(vLat1, vLon1, vLat2, vLon2, vRadius) {
   var pLat1Arc = Angle2Arc(vLat1);
   var pLat2Arc = Angle2Arc(vLat2);
@@ -673,14 +649,6 @@ function raysLineCross(vLat0, vLon0, vHeading, vLat1, vLon1, vLat2, vLon2) {
 
 /// 球面获取两线段交点
 /// 方便理解令11为A,12为B,21为C,22为D
-/// <param name="vP1Lat1"></param>
-/// <param name="vP1Lon1"></param>
-/// <param name="vP1Lat2"></param>
-/// <param name="vP1lon2"></param>
-/// <param name="vP2Lat1"></param>
-/// <param name="vP2Lon1"></param>
-/// <param name="vP2Lat2"></param>
-/// <param name="vP2Lon2"></param>
 function twoLineCross(vP1Lat1, vP1Lon1, vP1Lat2, vP1Lon2, vP2Lat1, vP2Lon1, vP2Lat2, vP2Lon2) {
   var tuple = [];
   //如果在端点处相交

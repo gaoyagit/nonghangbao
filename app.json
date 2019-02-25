@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/receiveMap/receiveMap",
     "pages/login/login",
     "pages/mode/mode",
     "pages/genPlanlineInWork/genPlanlineInWorkmap",
@@ -7,7 +8,7 @@
     "pages/testLogin/index", 
     
     "pages/defaultMap/defaultMap",
-    "pages/receiveMap/receiveMap",
+    
     "pages/selfbuiltMap/selfbuiltMap",      
     "pages/index/index",
     "pages/logs/logs" 
